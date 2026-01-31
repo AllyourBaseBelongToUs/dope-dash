@@ -1,5 +1,7 @@
 # Spec: Bulk Operations
 
+## Status: 🟡 TODO (Phase 5)
+
 ## Objective
 Multi-select and bulk actions (pause/resume/stop multiple projects)
 
@@ -22,8 +24,13 @@ Multi-select and bulk actions (pause/resume/stop multiple projects)
 - [ ] Results summary displays
 - [ ] Undo works for recent bulk ops
 
+## Implementation Notes
+- **Status:** NOT YET IMPLEMENTED - Scheduled for Phase 5
+- **Actions:** bulk pause, resume, stop
+- **Selection:** Checkbox-based multi-select
+
 ## Dependencies
 20-project-controls
 
 ## End State
-Multiple projects can be controlled simultaneously
+Multiple projects can be controlled simultaneously 🟡 TODO

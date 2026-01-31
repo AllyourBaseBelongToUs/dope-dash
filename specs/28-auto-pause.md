@@ -1,5 +1,7 @@
 # Spec: Auto-Pause
 
+## Status: 🟡 TODO (Phase 6)
+
 ## Objective
 Auto-pause at 95% quota (lowest priority projects first)
 
@@ -22,8 +24,14 @@ Auto-pause at 95% quota (lowest priority projects first)
 - [ ] Auto-resume works after reset
 - [ ] Manual override available
 
+## Implementation Notes
+- **Status:** NOT YET IMPLEMENTED - Scheduled for Phase 6
+- **Thresholds:** 80% (warning), 90% (alert), 95% (auto-pause)
+- **Priority Order:** Low -> Medium -> High
+- **Buffer:** 10% warning before auto-pause
+
 ## Dependencies
 27-request-queue
 
 ## End State
-Projects auto-pause to prevent quota exhaustion
+Projects auto-pause to prevent quota exhaustion 🟡 TODO

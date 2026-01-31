@@ -1,5 +1,7 @@
 # Spec: Project State Machine
 
+## Status: 🟡 TODO (Phase 5)
+
 ## Objective
 Project state machine with full state tracking
 
@@ -22,8 +24,13 @@ Project state machine with full state tracking
 - [ ] Visualization accurate
 - [ ] Audit log complete
 
+## Implementation Notes
+- **Status:** NOT YET IMPLEMENTED - Scheduled for Phase 5
+- **States:** idle, queued, running, paused, error, completed, cancelled
+- **Database:** Requires state transition history table
+
 ## Dependencies
 23-agent-pool
 
 ## End State
-Project state transitions controlled and tracked
+Project state transitions controlled and tracked 🟡 TODO

@@ -1,5 +1,7 @@
 # Spec: Quota Tracking
 
+## Status: 🟡 TODO (Phase 6)
+
 ## Objective
 Real-time quota tracking per provider (Claude, Gemini, OpenAI, Cursor)
 
@@ -22,8 +24,14 @@ Real-time quota tracking per provider (Claude, Gemini, OpenAI, Cursor)
 - [ ] Dashboard shows current usage
 - [ ] Overage alerts trigger
 
+## Implementation Notes
+- **Status:** NOT YET IMPLEMENTED - Scheduled for Phase 6
+- **Related:** See PHASE-6-RATE-LIMITS.md for details
+- **Providers:** Claude, Gemini, OpenAI, Cursor
+- **Database:** Requires quota_usage and providers tables
+
 ## Dependencies
 24-state-machine
 
 ## End State
-API quota usage tracked in real-time
+API quota usage tracked in real-time 🟡 TODO

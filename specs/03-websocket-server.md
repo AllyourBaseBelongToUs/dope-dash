@@ -1,5 +1,7 @@
 # Spec: WebSocket Server
 
+## Status: ✅ COMPLETED
+
 ## Objective
 Create FastAPI WebSocket server for real-time event broadcasting
 
@@ -16,14 +18,21 @@ Create FastAPI WebSocket server for real-time event broadcasting
 10. Bind to 0.0.0.0:8001 for external access
 
 ## Acceptance Criteria
-- [ ] WebSocket accepts connections on port 8001
-- [ ] Events broadcast to all connected clients
-- [ ] Events persist to database
-- [ ] Client disconnections handled cleanly
-- [ ] Server accessible from Windows host (192.168.206.128:8001)
+- [x] WebSocket accepts connections on port 8001
+- [x] Events broadcast to all connected clients
+- [x] Events persist to database
+- [x] Client disconnections handled cleanly
+- [x] Server accessible from Windows host (192.168.206.128:8001)
+
+## Implementation Notes
+- **Service Startup:** `uvicorn backend.server.websocket:app --host 0.0.0.0 --port 8001`
+- **Auto-Retry:** Client auto-reconnects every 3 minutes if connection drops
+- **Manual Retry:** Dashboard shows retry button when in polling mode
+- **NO DOCKER:** Direct uvicorn service startup
+- **Health Check:** Ping/pong mechanism for connection monitoring
 
 ## Dependencies
 02-database-schema
 
 ## End State
-WebSocket server ready for dashboard connections
+WebSocket server ready for dashboard connections ✅

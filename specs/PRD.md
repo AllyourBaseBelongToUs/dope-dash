@@ -84,45 +84,87 @@ This PRD consolidates the following detailed design documents located in the pro
 - PostgreSQL (localhost:5432, database-first)
 - psycopg2 (database connections)
 - tmux (terminal control)
+- Uvicorn (ASGI server - direct service startup, NO DOCKER)
 
 **Frontend:**
-- Next.js with TypeScript
+- Next.js 15 with React 19 and TypeScript
 - Tailwind CSS
-- WebSocket client (real-time updates)
-- Polling client (on-demand updates)
+- WebSocket client (real-time updates with auto-retry)
+- Polling client (on-demand updates with manual retry)
 - Web Audio API (sound alerts)
+- react-virtuoso (event list virtualization)
 
 **Infrastructure:**
-- PostgreSQL on VM (source of truth)
+- PostgreSQL on port 5432 (source of truth)
+- Redis cache on port 6379
 - tmux for session management
 - Network: Windows ↔ VM (192.168.206.128)
+- Direct Python services (NO CONTAINERIZATION)
 
 ---
 
-## Port Architecture
+## Port Architecture (COMPLETED)
 
-| Port | Purpose | Binding |
-|------|---------|---------|
-| 8001 | WebSocket (real-time push) | 0.0.0.0 |
-| 8002 | Control API (all agents) | 0.0.0.0 |
-| 8003 | Dashboard (Next.js) | 0.0.0.0 |
-| 8004 | Analytics API (on-demand) | 0.0.0.0 |
-| 5432 | PostgreSQL | 127.0.0.1 |
+| Port | Purpose | Status | Binding | Service |
+|------|---------|--------|---------|---------|
+| 8000 | Core API (query, reports, retention, portfolio, projects) | ✅ COMPLETED | 0.0.0.0 | FastAPI via uvicorn |
+| 8001 | WebSocket Server (real-time push) | ✅ COMPLETED | 0.0.0.0 | FastAPI via uvicorn |
+| 8002 | Control API (agent commands) | ✅ COMPLETED | 0.0.0.0 | FastAPI via uvicorn |
+| 8003 | Dashboard (Next.js frontend) | ✅ COMPLETED | 0.0.0.0 | next dev |
+| 8004 | Analytics API (metrics and trends) | ✅ COMPLETED | 0.0.0.0 | FastAPI via uvicorn |
+| 5432 | PostgreSQL | ✅ COMPLETED | 127.0.0.1 | postgres |
+| 6379 | Redis Cache | ✅ COMPLETED | 127.0.0.1 | redis-server |
+
+---
+
+## Implementation Status
+
+**Architecture - COMPLETED:**
+- ✅ Microservices architecture fully implemented (5 services on ports 8000-8004)
+- ✅ PostgreSQL database on port 5432 (database-first persistence)
+- ✅ Redis cache on port 6379
+- ✅ NO DOCKER - Direct Python services with uvicorn
+
+**Frontend - COMPLETED:**
+- ✅ Next.js 15 + React 19 dashboard
+- ✅ Real-time WebSocket connection with auto-retry (every 3 min)
+- ✅ Manual retry button when in polling mode
+- ✅ Event list virtualization with react-virtuoso
+- ✅ Notification settings (sound toggle, desktop toggle, preference levels)
+- ✅ Command palette with keyboard shortcuts
+- ✅ Full settings page with export/import, search, preview mode
+- ✅ Environment detection (VM vs local)
+
+**Backend - COMPLETED:**
+- ✅ FastAPI backend services (ports 8000-8004)
+- ✅ WebSocket server for real-time events
+- ✅ Control API for agent commands
+- ✅ Analytics API with caching
+- ✅ Database connection pooling (15 pool + 5 overflow per service)
+- ✅ Request caching and deduplication
+- ✅ localStorage quota management
+
+**Code Quality - COMPLETED:**
+- ✅ 30/32 critique issues fixed (94%)
+- ✅ TypeScript strict mode enforced
+- ✅ ESLint enforced in builds
+- ✅ Type consolidations completed
+- ✅ Security fixes (path traversal, injection prevention)
 
 ---
 
 ## Success Criteria
 
-- [ ] Dashboard shows real-time spec progress for all agents
-- [ ] Can pause/resume/skip any agent from dashboard
-- [ ] Slash commands work (Ctrl+K command palette)
-- [ ] Multi-agent control unified (Ralph + Claude + Cursor + Terminal)
-- [ ] Analytics show historical trends (30/90/365 days)
-- [ ] Notifications work (audio + desktop)
-- [ ] Mission Control portfolio view manages multiple projects
-- [ ] Agent pool management with load balancing
-- [ ] Rate limits detected and handled with auto-retry
-- [ ] /quota command shows usage statistics
+- [x] Dashboard shows real-time spec progress for all agents (COMPLETED)
+- [x] Can pause/resume/skip any agent from dashboard (COMPLETED)
+- [x] Slash commands work (Ctrl+K command palette) (COMPLETED)
+- [ ] Multi-agent control unified (Ralph + Claude + Cursor + Terminal) (PARTIAL - Ralph implemented)
+- [x] Analytics show historical trends (30/90/365 days) (COMPLETED)
+- [x] Notifications work (audio + desktop) (COMPLETED)
+- [ ] Mission Control portfolio view manages multiple projects (TODO - Phase 5)
+- [ ] Agent pool management with load balancing (TODO - Phase 5)
+- [ ] Rate limits detected and handled with auto-retry (TODO - Phase 6)
+- [ ] /quota command shows usage statistics (TODO - Phase 6)
 
 ---
 

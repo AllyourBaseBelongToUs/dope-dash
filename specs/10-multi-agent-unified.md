@@ -1,5 +1,7 @@
 # Spec: Multi-Agent Unified Model
 
+## Status: 🟡 PARTIAL (Ralph implemented, Claude/Cursor/Terminal pending)
+
 ## Objective
 Create unified session model for Ralph + Claude + Cursor + Terminal
 
@@ -16,14 +18,22 @@ Create unified session model for Ralph + Claude + Cursor + Terminal
 10. Create agent factory for wrapper instantiation
 
 ## Acceptance Criteria
-- [ ] All 4 agent types detected
-- [ ] Sessions show correct agent type
-- [ ] Agent metadata captured automatically
-- [ ] Heartbeats detect dead agents
-- [ ] Factory creates correct wrappers
+- [x] Ralph agent type detected
+- [ ] Claude agent type detected (TODO)
+- [ ] Cursor agent type detected (TODO)
+- [ ] Terminal agent type detected (TODO)
+- [x] Agent metadata captured automatically (for Ralph)
+- [x] Heartbeats detect dead agents
+- [x] Factory creates correct wrappers (for Ralph)
+
+## Implementation Notes
+- **Completed:** Ralph Inferno integration fully working
+- **TODO:** Claude Code wrapper implementation
+- **TODO:** Cursor wrapper implementation
+- **TODO:** Terminal/tmux wrapper implementation
 
 ## Dependencies
 09-error-notifications
 
 ## End State
-Dashboard shows all agent types uniformly
+Dashboard shows all agent types uniformly (Ralph ✅, others 🟡 TODO)

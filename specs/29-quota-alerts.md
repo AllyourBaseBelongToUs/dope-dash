@@ -1,5 +1,7 @@
 # Spec: Quota Alerts
 
+## Status: 🟡 TODO (Phase 6)
+
 ## Objective
 Multi-channel alerts at 80%/90%/95% thresholds
 
@@ -22,8 +24,14 @@ Multi-channel alerts at 80%/90%/95% thresholds
 - [ ] Acknowledgment stops repeat alerts
 - [ ] Cooldown prevents spam
 
+## Implementation Notes
+- **Status:** NOT YET IMPLEMENTED - Scheduled for Phase 6
+- **Thresholds:** 80%, 90%, 95%
+- **Channels:** Dashboard banners, desktop notifications, audio (95%)
+- **Database:** Requires quota_alerts table
+
 ## Dependencies
 28-auto-pause
 
 ## End State
-Users notified before quota exhaustion
+Users notified before quota exhaustion 🟡 TODO

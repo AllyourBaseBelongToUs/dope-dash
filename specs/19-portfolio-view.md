@@ -1,5 +1,7 @@
 # Spec: Portfolio View
 
+## Status: 🟡 TODO (Phase 5)
+
 ## Objective
 Create project portfolio view showing all projects with status
 
@@ -22,8 +24,14 @@ Create project portfolio view showing all projects with status
 - [ ] Filters work correctly
 - [ ] Search finds projects
 
+## Implementation Notes
+- **Status:** NOT YET IMPLEMENTED - Scheduled for Phase 5
+- **Related:** See PHASE-5-cleaned.md for details
+- **Database:** Requires projects table creation
+- **UI:** Portfolio grid component needed
+
 ## Dependencies
 18-retention-policies
 
 ## End State
-Mission Control portfolio view operational
+Mission Control portfolio view operational 🟡 TODO

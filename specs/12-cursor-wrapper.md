@@ -1,5 +1,7 @@
 # Spec: Cursor Wrapper
 
+## Status: 🟡 TODO (Phase 3+)
+
 ## Objective
 Create Cursor wrapper with stdin/stdout communication
 
@@ -21,8 +23,12 @@ Create Cursor wrapper with stdin/stdout communication
 - [ ] Cursor sessions detected automatically
 - [ ] Process crashes handled
 
+## Implementation Notes
+- **Status:** NOT YET IMPLEMENTED - Scheduled for Phase 3+
+- **Dependencies:** Multi-agent unified model (spec 10) needs completion
+
 ## Dependencies
 11-claude-wrapper
 
 ## End State
-Cursor agent telemetry streams to dashboard
+Cursor agent telemetry streams to dashboard 🟡 TODO

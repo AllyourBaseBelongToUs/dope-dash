@@ -1,5 +1,7 @@
 # Spec: Quota CLI Command
 
+## Status: 🟡 TODO (Phase 6)
+
 ## Objective
 /quota CLI command for terminal users
 
@@ -22,8 +24,14 @@
 - [ ] --json works for scripting
 - [ ] --watch refreshes automatically
 
+## Implementation Notes
+- **Status:** NOT YET IMPLEMENTED - Scheduled for Phase 6
+- **Command:** /quota
+- **Options:** --providers, --history, --reset, --json, --watch
+- **Output:** Colored terminal output (green/yellow/red)
+
 ## Dependencies
 29-quota-alerts
 
 ## End State
-Terminal users can check quota via CLI
+Terminal users can check quota via CLI 🟡 TODO

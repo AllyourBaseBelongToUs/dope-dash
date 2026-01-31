@@ -1,5 +1,7 @@
 # Spec: Control API
 
+## Status: ✅ COMPLETED
+
 ## Objective
 Create REST API for sending commands to agents
 
@@ -16,14 +18,20 @@ Create REST API for sending commands to agents
 10. Document API with OpenAPI/Swagger
 
 ## Acceptance Criteria
-- [ ] Commands accepted on port 8002
-- [ ] Agents receive commands via stdin/unix socket
--. [ ] Command status tracked end-to-end
-- [ ] Offline agents queue commands
-- [ ] API docs available at /docs
+- [x] Commands accepted on port 8002
+- [x] Agents receive commands via stdin/unix socket
+- [x] Command status tracked end-to-end
+- [x] Offline agents queue commands
+- [x] API docs available at /docs
+
+## Implementation Notes
+- **Service Startup:** `uvicorn backend.server.control:app --host 0.0.0.0 --port 8002`
+- **Commands Supported:** pause, resume, skip, stop
+- **API Docs:** Swagger UI available at /docs endpoint
+- **NO DOCKER:** Direct uvicorn service startup
 
 ## Dependencies
 05-dashboard-mvp
 
 ## End State
-Dashboard can send commands to active agents
+Dashboard can send commands to active agents ✅

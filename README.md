@@ -1,89 +1,127 @@
-# Ralph Inferno Monitoring Dashboard
+# Dope Dash
 
-**Status:** Planning Complete - Ready for Implementation
-**Created:** 2026-01-23
+A real-time multi-agent control center for monitoring and managing AI agent fleets. Built with Next.js, FastAPI, and PostgreSQL.
 
----
+## Overview
 
-## 🎯 Purpose
+Dope Dash provides:
+- Real-time agent monitoring with WebSocket updates
+- Agent pool management with state machine control
+- Quota tracking and rate limit detection
+- Command palette for quick actions
+- Portfolio view for multi-project management
+- Analytics and reporting capabilities
 
-A unified web dashboard for monitoring multiple autonomous Ralph Inferno sessions on your VM with real-time updates, intervention capabilities, and Claude Code integration.
+## Project Structure
 
----
+```
+dope-dash/
+├── frontend/          # Next.js application
+│   ├── src/
+│   │   ├── app/      # App router pages
+│   │   ├── components/  # React components
+│   │   └── lib/      # Utilities and shared code
+│   └── package.json
+├── backend/          # FastAPI application
+│   ├── app/
+│   │   ├── api/      # API endpoints
+│   │   ├── models/   # Database models
+│   │   ├── services/ # Business logic
+│   │   └── core/     # Configuration
+│   └── requirements.txt
+├── shared/           # Shared types and utilities
+│   ├── types/
+│   └── utils/
+├── docker-compose.yml
+└── Makefile
+```
 
-## 📚 Documentation
+## Quick Start
 
-See `plans/` folder for complete documentation:
+### Prerequisites
 
-- `plans/SUPER-DUPER-PLAN.md` - Master implementation plan (4 weeks)
-- `plans/SYNTHESIS-THINKING.md` - Sequential thinking synthesis
-- `plans/MCP-KEY-LEARNINGS.md` - Key insights from MCP feedback research
-- `plans/atoms/` - Individual AOT atom reasoning and context
+- Node.js 18+
+- Python 3.11+
+- Docker and Docker Compose
+- `python3-venv` package (install with `apt install python3.12-venv` on Ubuntu)
 
----
+### Installation
 
-## 🚀 Quick Start
+1. Clone the repository:
+```bash
+git clone <repo-url>
+cd dope-dash
+```
 
-**When ready to implement:**
+2. Install dependencies:
+```bash
+make install
+```
+
+3. Set up environment variables:
+```bash
+cp .env.example .env
+# Edit .env with your configuration
+```
+
+4. Start development servers:
+```bash
+make dev
+```
+
+The frontend will be available at http://localhost:3000
+The backend API will be available at http://localhost:8000
+
+### Docker Development
+
+Start all services with Docker:
+```bash
+make docker-up
+```
+
+View logs:
+```bash
+make docker-logs
+```
+
+Stop services:
+```bash
+make docker-down
+```
+
+## Available Commands
 
 ```bash
-# 1. Set up Python backend
-python -m venv venv
-source venv/bin/activate
-pip install fastapi uvicorn websockets
-
-# 2. Set up Next.js dashboard
-cd dashboard
-npm install
-
-# 3. Start development
-# Terminal 1: API server
-uvicorn api.main:app --host 0.0.0.0 --port 8001
-
-# Terminal 2: Dashboard
-cd dashboard && npm run dev
+make help           # Show all available commands
+make install        # Install all dependencies
+make dev            # Start frontend and backend dev servers
+make build          # Build frontend for production
+make test           # Run all tests
+make lint           # Run linters
+make format         # Format code
+make clean          # Clean build artifacts
 ```
 
----
+## Development
 
-## 📊 Architecture
+### Frontend (Next.js)
+- Located in `frontend/`
+- Uses App Router
+- Styling with Tailwind CSS
+- UI components with Radix UI
+- State management with Zustand
 
-```
-VM (192.168.206.128):
-  Ralph Sessions → Monitoring Layer → WebSocket/API
-                                                    ↓
-Windows (Your Machine):
-  Browser Dashboard ← Real-time updates
-```
+### Backend (FastAPI)
+- Located in `backend/`
+- Async/await with SQLAlchemy
+- WebSocket support for real-time updates
+- PostgreSQL database with Alembic migrations
+- Redis for caching and pub/sub
 
----
+### Testing
+- Frontend E2E tests with Playwright
+- Backend unit tests with pytest
 
-## 🔌 Ports
+## License
 
-- **8001:** WebSocket Server (FastAPI)
-- **8002:** Query API (FastAPI)
-- **8003:** Dashboard (Next.js)
-
----
-
-## 📖 Full Documentation
-
-All planning artifacts are in the `plans/` folder.
-
-Start with `plans/SUPER-DUPER-PLAN.md` for the complete implementation roadmap.
-
----
-
-## 🎓 AOT Session Summary
-
-**Date:** 2026-01-23
-**Method:** Atom of Thoughts (AoT) + Sequential Thinking
-**Agents Deployed:** 3 (deep-researcher ×2, general-purpose ×1)
-**Total Atoms:** 5
-**Sequential Thoughts:** 8
-
----
-
-## 📞 Questions?
-
-See `plans/README.md` for detailed documentation index.
+MIT

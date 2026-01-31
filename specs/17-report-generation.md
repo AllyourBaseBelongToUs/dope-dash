@@ -1,5 +1,7 @@
 # Spec: Report Generation
 
+## Status: 🟡 TODO (Phase 4+)
+
 ## Objective
 Automated PDF and Markdown report generation
 
@@ -22,8 +24,12 @@ Automated PDF and Markdown report generation
 - [ ] Download buttons work
 - [ ] Old reports cleaned up
 
+## Implementation Notes
+- **Status:** NOT YET IMPLEMENTED - Scheduled for Phase 4+
+- **Libraries:** recharts (charts), jsPDF or puppeteer (PDF)
+
 ## Dependencies
 16-environment-detection
 
 ## End State
-Users can generate and download reports
+Users can generate and download reports 🟡 TODO

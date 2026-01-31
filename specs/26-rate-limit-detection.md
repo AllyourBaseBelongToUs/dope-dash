@@ -1,5 +1,7 @@
 # Spec: Rate Limit Detection
 
+## Status: 🟡 TODO (Phase 6)
+
 ## Objective
 429 error detection with exponential backoff retry
 
@@ -22,8 +24,14 @@
 - [ ] Jitter prevents synchronized retries
 - [ ] Max retries enforced
 
+## Implementation Notes
+- **Status:** NOT YET IMPLEMENTED - Scheduled for Phase 6
+- **Backoff:** 1s, 2s, 4s, 8s, 16s (5 attempts max)
+- **Jitter:** Prevents thundering herd problem
+- **Database:** Requires rate_limit_events table
+
 ## Dependencies
 25-quota-tracking
 
 ## End State
-Rate limits handled with auto-retry
+Rate limits handled with auto-retry 🟡 TODO

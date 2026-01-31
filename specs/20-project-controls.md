@@ -1,5 +1,7 @@
 # Spec: Project Controls
 
+## Status: 🟡 TODO (Phase 5)
+
 ## Objective
 Add per-project controls (pause, resume, skip, stop, retry, restart)
 
@@ -12,7 +14,7 @@ Add per-project controls (pause, resume, skip, stop, retry, restart)
 6. Implement retry project (restart failed specs)
 7. Implement restart project (full re-run)
 8. Add confirmation modals for destructive actions
-9. Create project state machine (idle → running → paused → completed)
+9. Create project state machine (idle -> running -> paused -> completed)
 10. Add project control history log
 
 ## Acceptance Criteria
@@ -22,8 +24,13 @@ Add per-project controls (pause, resume, skip, stop, retry, restart)
 - [ ] Confirmation modals prevent accidents
 - [ ] Control history shows all actions
 
+## Implementation Notes
+- **Status:** NOT YET IMPLEMENTED - Scheduled for Phase 5
+- **Commands:** pause, resume, skip, stop, retry, restart
+- **State Machine:** idle -> running -> paused -> completed
+
 ## Dependencies
 19-portfolio-view
 
 ## End State
-Projects can be controlled from portfolio view
+Projects can be controlled from portfolio view 🟡 TODO

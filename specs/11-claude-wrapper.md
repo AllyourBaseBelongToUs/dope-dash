@@ -1,5 +1,7 @@
 # Spec: Claude Wrapper
 
+## Status: 🟡 TODO (Phase 3+)
+
 ## Objective
 Create Claude Code wrapper with stdin/stdout communication
 
@@ -21,8 +23,12 @@ Create Claude Code wrapper with stdin/stdout communication
 - [ ] Claude sessions detected automatically
 - [ ] Process crashes handled
 
+## Implementation Notes
+- **Status:** NOT YET IMPLEMENTED - Scheduled for Phase 3+
+- **Dependencies:** Multi-agent unified model (spec 10) needs completion
+
 ## Dependencies
 10-multi-agent-unified
 
 ## End State
-Claude Code agent telemetry streams to dashboard
+Claude Code agent telemetry streams to dashboard 🟡 TODO

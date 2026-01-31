@@ -1,5 +1,7 @@
 # Spec: Request Queue
 
+## Status: 🟡 TODO (Phase 6)
+
 ## Objective
 Request queue and throttling when approaching limits
 
@@ -22,8 +24,14 @@ Request queue and throttling when approaching limits
 - [ ] Queue visible in dashboard
 - [ ] Queue persists across restarts
 
+## Implementation Notes
+- **Status:** NOT YET IMPLEMENTED - Scheduled for Phase 6
+- **Priorities:** high, medium, low
+- **Database:** Requires request_queue table
+- **Features:** Flush, cancellation, persistence
+
 ## Dependencies
 26-rate-limit-detection
 
 ## End State
-API requests throttled automatically
+API requests throttled automatically 🟡 TODO

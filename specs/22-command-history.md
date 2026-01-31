@@ -1,5 +1,7 @@
 # Spec: Command History
 
+## Status: 🟡 TODO (Phase 5)
+
 ## Objective
 Command sending system with history and replay functionality
 
@@ -22,8 +24,13 @@ Command sending system with history and replay functionality
 - [ ] Favorites persist across sessions
 - [ ] Export includes all context
 
+## Implementation Notes
+- **Status:** NOT YET IMPLEMENTED - Scheduled for Phase 5
+- **Database:** Requires commands_history table
+- **Features:** Typeahead, replay, favorites, templates
+
 ## Dependencies
 21-bulk-operations
 
 ## End State
-Commands can be sent, tracked, and replayed
+Commands can be sent, tracked, and replayed 🟡 TODO

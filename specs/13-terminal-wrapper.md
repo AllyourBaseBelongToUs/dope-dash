@@ -1,5 +1,7 @@
 # Spec: Terminal Wrapper
 
+## Status: 🟡 TODO (Phase 3+)
+
 ## Objective
 Create Terminal agent wrapper for shell command tracking
 
@@ -21,8 +23,12 @@ Create Terminal agent wrapper for shell command tracking
 - [ ] tmux sessions detected
 - [ ] Process crashes handled
 
+## Implementation Notes
+- **Status:** NOT YET IMPLEMENTED - Scheduled for Phase 3+
+- **Dependencies:** Multi-agent unified model (spec 10) needs completion
+
 ## Dependencies
 12-cursor-wrapper
 
 ## End State
-Terminal agent telemetry streams to dashboard
+Terminal agent telemetry streams to dashboard 🟡 TODO

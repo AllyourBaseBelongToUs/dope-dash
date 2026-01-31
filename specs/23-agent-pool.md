@@ -1,5 +1,7 @@
 # Spec: Agent Pool Management
 
+## Status: 🟡 TODO (Phase 5)
+
 ## Objective
 Agent pool management with load balancing
 
@@ -22,8 +24,14 @@ Agent pool management with load balancing
 - [ ] Capacity limits enforced
 - [ ] Performance metrics visible
 
+## Implementation Notes
+- **Status:** NOT YET IMPLEMENTED - Scheduled for Phase 5
+- **Database:** Requires agents table
+- **Algorithm:** Least-loaded load balancing
+- **Features:** Auto-scaling, sticky sessions
+
 ## Dependencies
 22-command-history
 
 ## End State
-Agent pool managed automatically
+Agent pool managed automatically 🟡 TODO

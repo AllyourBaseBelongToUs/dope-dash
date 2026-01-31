@@ -1,5 +1,7 @@
 # Spec: Error Notifications
 
+## Status: ✅ COMPLETED
+
 ## Objective
 Add error detection and query API endpoints
 
@@ -16,14 +18,19 @@ Add error detection and query API endpoints
 10. Create error export to CSV
 
 ## Acceptance Criteria
-- [ ] Errors detected and highlighted
-- [ ] Query API returns filtered events
-- [ ] Error badges show current count
-- [ ] Error modal displays full details
-- [ ] Export includes all error context
+- [x] Errors detected and highlighted
+- [x] Query API returns filtered events
+- [x] Error badges show current count
+- [x] Error modal displays full details
+- [x] Export includes all error context
+
+## Implementation Notes
+- **Query API:** Part of Core API on port 8000
+- **Filters:** session_id, event_type, date_range
+- **Export:** CSV format for error analysis
 
 ## Dependencies
 08-command-palette
 
 ## End State
-Errors are visible and queryable
+Errors are visible and queryable ✅

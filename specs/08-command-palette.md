@@ -1,5 +1,7 @@
 # Spec: Command Palette
 
+## Status: ✅ COMPLETED
+
 ## Objective
 Add Ctrl+K command palette with slash commands
 
@@ -16,14 +18,20 @@ Add Ctrl+K command palette with slash commands
 10. Create keyboard shortcut for feedback (Ctrl+Enter)
 
 ## Acceptance Criteria
-- [ ] Ctrl+K opens command palette
-- [ ] Slash commands work
-- [ ] Autocomplete suggests commands
-- [ ] Custom feedback sends to agent
-- [ ] Timeout resets on keystroke
+- [x] Ctrl+K opens command palette
+- [x] Slash commands work
+- [x] Autocomplete suggests commands
+- [x] Custom feedback sends to agent
+- [x] Timeout resets on keystroke
+
+## Implementation Notes
+- **Commands:** /pause, /resume, /skip, /stop
+- **Keyboard Shortcuts:** Ctrl+K (palette), Ctrl+Enter (send feedback)
+- **Smart Timeout:** 30s default, resets on typing
+- **History:** Up/down arrows for previous commands
 
 ## Dependencies
 07-ui-controls
 
 ## End State
-Power users can control agents via keyboard
+Power users can control agents via keyboard ✅

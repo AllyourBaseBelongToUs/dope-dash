@@ -1,5 +1,7 @@
 # Spec: Database Schema
 
+## Status: ✅ COMPLETED
+
 ## Objective
 Create PostgreSQL database schema with events, sessions, spec_runs, metric_buckets tables
 
@@ -16,14 +18,21 @@ Create PostgreSQL database schema with events, sessions, spec_runs, metric_bucke
 10. Create database connection pool in backend/db/connection.py
 
 ## Acceptance Criteria
-- [ ] All tables created with proper constraints
-- [ ] Indexes improve query performance
-- [ ] Migration system works forward and backward
-- [ ] Connection pool handles 20+ concurrent connections
-- [ ] Retention policies enforce data lifecycle
+- [x] All tables created with proper constraints
+- [x] Indexes improve query performance
+- [x] Migration system works forward and backward
+- [x] Connection pool handles 20+ concurrent connections (15 pool + 5 overflow per service)
+- [x] Retention policies enforce data lifecycle
+
+## Implementation Notes
+- **Connection Pooling:** 15 base connections + 5 overflow per service (5 services = 100 total max)
+- **Port:** PostgreSQL on localhost:5432
+- **Retention:** 30 days for events, 1 year for sessions
+- **Migration System:** Alembic-based for version control
+- **First-Party:** Database is the source of truth, not a cache
 
 ## Dependencies
 01-project-setup
 
 ## End State
-PostgreSQL database ready for event storage
+PostgreSQL database ready for event storage ✅
