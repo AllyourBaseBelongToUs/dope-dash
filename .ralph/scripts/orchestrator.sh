@@ -17,7 +17,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/notify.sh"
 
 # Config
-MAX_ITERATIONS=${MAX_ITERATIONS:-17}
+MAX_ITERATIONS=${MAX_ITERATIONS:-20}
 ITERATION=0
 
 # Parse args
