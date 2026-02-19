@@ -14,7 +14,7 @@ export {
   ComparisonMetricsChart,
   TopErrorsChart,
   ErrorsBySessionChart,
-} from './charts';
+} from './Charts';
 
 // New chart components
 export {
@@ -22,7 +22,7 @@ export {
   EventBreakdownChart,
   TrendChart,
   ComparisonChart,
-} from './charts';
+} from './Charts';
 
 // Dialog components
 export {
