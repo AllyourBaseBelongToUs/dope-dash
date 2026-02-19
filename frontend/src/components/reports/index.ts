@@ -14,7 +14,7 @@ export {
   ComparisonMetricsChart,
   TopErrorsChart,
   ErrorsBySessionChart,
-} from './Charts';
+} from './charts';
 
 // New chart components
 export {

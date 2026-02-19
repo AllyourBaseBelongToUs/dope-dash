@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Session, Event, WebSocketMessage, ConnectionStatus, SpecProgress, CommandHistoryEntry, ErrorEvent } from '@/types';
+import type { Session, Event, WebSocketMessage, ConnectionStatus, SpecProgress, DashboardCommandEntry, ErrorEvent } from '@/types';
 import { useNotificationStore } from '@/store/notificationStore';
 
 interface DashboardStore {
@@ -23,9 +23,9 @@ interface DashboardStore {
   clearSessions: () => void;
 
   // Command actions
-  addCommandToHistory: (sessionId: string, command: CommandHistoryEntry) => void;
-  updateCommandInHistory: (sessionId: string, commandId: string, updates: Partial<CommandHistoryEntry>) => void;
-  getLatestCommandStatus: (sessionId: string) => CommandHistoryEntry | null;
+  addCommandToHistory: (sessionId: string, command: DashboardCommandEntry) => void;
+  updateCommandInHistory: (sessionId: string, commandId: string, updates: Partial<DashboardCommandEntry>) => void;
+  getLatestCommandStatus: (sessionId: string) => DashboardCommandEntry | null;
 
   // Error actions
   addError: (error: ErrorEvent) => void;
@@ -143,7 +143,7 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
       const newEvent: Event = {
         id: message.id,
         sessionId: message.session_id,
-        eventType: message.event_type || 'info',
+        eventType: (message.event_type || 'progress') as any,
         data: message.data || {},
         createdAt: message.created_at || new Date().toISOString(),
       };
@@ -158,18 +158,21 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
     if (!session && message.session_id) {
       // Create new session from session_start event
       if (message.event_type === 'session_start') {
+        const now = new Date().toISOString();
         const newSession: Session = {
           id: message.session_id,
-          agentType: (message.data?.agent_type as string) || 'ralph',
+          agentType: ((message.data?.agent_type as string) || 'ralph') as any,
           projectName: (message.data?.project_name as string) || 'unknown',
           status: 'running',
-          startedAt: message.created_at || new Date().toISOString(),
+          startedAt: message.created_at || now,
+          createdAt: now,
+          updatedAt: now,
           metadata: (message.data as Record<string, unknown>) || {},
           specs: [],
           completedSpecs: 0,
           totalSpecs: 0,
           progress: 0,
-          lastActivity: message.created_at || new Date().toISOString(),
+          lastActivity: message.created_at || now,
           agentStatus: 'running',
           commandHistory: [],
         };
@@ -232,7 +235,7 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
           s.specName === specName
             ? {
                 ...s,
-                status: 'completed',
+                status: 'completed' as const,
                 completedAt: message.created_at,
                 duration,
               }

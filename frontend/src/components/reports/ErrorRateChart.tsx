@@ -62,7 +62,7 @@ export function ErrorRateChart({ trends, type = 'area' }: ErrorRateChartProps) {
           }}
           itemStyle={{ color: '#f1f5f9' }}
           labelStyle={{ color: '#94a3b8' }}
-          formatter={(value: number) => [value, 'Errors']}
+          formatter={(value: number | undefined) => [value ?? 0, 'Errors']}
         />
         <Legend
           wrapperStyle={{ color: '#94a3b8' }}

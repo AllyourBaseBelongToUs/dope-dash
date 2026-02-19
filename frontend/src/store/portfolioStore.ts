@@ -121,8 +121,6 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
   offset: 0,
   selectedProjectIds: new Set<string>(),
   isAllSelected: false,
-  limit: 100,
-  offset: 0,
 
   // Setters
   setProjects: (projects) => set({ projects }),
@@ -534,7 +532,24 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
 
     try {
       const service = getPortfolioService();
-      const result = await service.bulkPauseProjects(projectIds);
+      const response = await service.bulkPauseProjects(projectIds);
+
+      // Transform snake_case to camelCase
+      const result = {
+        action: response.action,
+        total_requested: response.total_requested,
+        successful: response.successful,
+        failed: response.failed,
+        results: response.results.map(r => ({
+          projectId: r.project_id,
+          projectName: r.project_name,
+          success: r.success,
+          message: r.message,
+          agentsAffected: r.agents_affected,
+          error: r.error,
+        })),
+        total_agents_affected: response.total_agents_affected,
+      };
 
       // Refresh project data
       await get().fetchProjects();
@@ -564,7 +579,24 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
 
     try {
       const service = getPortfolioService();
-      const result = await service.bulkResumeProjects(projectIds);
+      const response = await service.bulkResumeProjects(projectIds);
+
+      // Transform snake_case to camelCase
+      const result = {
+        action: response.action,
+        total_requested: response.total_requested,
+        successful: response.successful,
+        failed: response.failed,
+        results: response.results.map(r => ({
+          projectId: r.project_id,
+          projectName: r.project_name,
+          success: r.success,
+          message: r.message,
+          agentsAffected: r.agents_affected,
+          error: r.error,
+        })),
+        total_agents_affected: response.total_agents_affected,
+      };
 
       // Refresh project data
       await get().fetchProjects();
@@ -594,7 +626,24 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
 
     try {
       const service = getPortfolioService();
-      const result = await service.bulkStopProjects(projectIds);
+      const response = await service.bulkStopProjects(projectIds);
+
+      // Transform snake_case to camelCase
+      const result = {
+        action: response.action,
+        total_requested: response.total_requested,
+        successful: response.successful,
+        failed: response.failed,
+        results: response.results.map(r => ({
+          projectId: r.project_id,
+          projectName: r.project_name,
+          success: r.success,
+          message: r.message,
+          agentsAffected: r.agents_affected,
+          error: r.error,
+        })),
+        total_agents_affected: response.total_agents_affected,
+      };
 
       // Refresh project data
       await get().fetchProjects();

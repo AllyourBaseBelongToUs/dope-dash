@@ -18,7 +18,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts';
-import type { TrendData, ComparisonData, ErrorAnalysisData } from '@/types/reports';
+import type { TrendData, ComparisonData, ErrorAnalysisData, SessionSummary, TimeSeriesPoint, SpecTimeSeriesPoint } from '@/types/reports';
 import { format } from 'date-fns';
 
 /**
@@ -231,7 +231,7 @@ export function SessionsByStatusChart({ trends }: { trends: TrendData }) {
           cx="50%"
           cy="50%"
           labelLine={false}
-          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+          label={({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
           outerRadius={80}
           fill="#8884d8"
           dataKey="value"
@@ -463,6 +463,208 @@ export function ErrorsBySessionChart({ errorAnalysis }: { errorAnalysis: ErrorAn
           name="Errors"
           radius={[4, 4, 0, 0]}
         />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+/**
+ * Session Duration Chart - for reports page
+ * Displays session durations as a bar chart
+ */
+export function SessionDurationChart({ sessions }: { sessions: SessionSummary[] }) {
+  const data = sessions.slice(0, 15).map((session) => ({
+    name: session.projectName?.slice(0, 15) || session.sessionId.slice(0, 10),
+    duration: Math.round((session.duration || 0) / 60), // Convert to minutes
+  }));
+
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <BarChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+        <XAxis
+          dataKey="name"
+          stroke="#64748b"
+          fontSize={11}
+          tickLine={false}
+          axisLine={false}
+        />
+        <YAxis
+          stroke="#64748b"
+          fontSize={12}
+          tickLine={false}
+          axisLine={false}
+        />
+        <Tooltip
+          contentStyle={{
+            backgroundColor: '#1e293b',
+            border: 'none',
+            borderRadius: '8px',
+            color: '#fff',
+          }}
+        />
+        <Legend />
+        <Bar
+          dataKey="duration"
+          fill={CHART_COLORS.primary}
+          name="Duration (min)"
+          radius={[4, 4, 0, 0]}
+        />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+/**
+ * Event Breakdown Chart - for reports page
+ * Displays event type breakdown as a pie chart
+ */
+interface EventBreakdownItem {
+  eventType: string;
+  count: number;
+}
+
+export function EventBreakdownChart({ data }: { data: EventBreakdownItem[] }) {
+  const chartData = data.map((item) => ({
+    name: item.eventType,
+    value: item.count,
+  }));
+
+  const COLORS = [
+    CHART_COLORS.primary,
+    CHART_COLORS.success,
+    CHART_COLORS.warning,
+    CHART_COLORS.danger,
+    CHART_COLORS.info,
+    CHART_COLORS.slate,
+  ];
+
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <PieChart>
+        <Pie
+          data={chartData}
+          cx="50%"
+          cy="50%"
+          labelLine={false}
+          label={({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
+          outerRadius={80}
+          fill="#8884d8"
+          dataKey="value"
+        >
+          {chartData.map((entry, index) => (
+            <Cell key={`cell-${entry.name}`} fill={COLORS[index % COLORS.length]} />
+          ))}
+        </Pie>
+        <Tooltip
+          contentStyle={{
+            backgroundColor: '#1e293b',
+            border: 'none',
+            borderRadius: '8px',
+            color: '#fff',
+          }}
+        />
+        <Legend />
+      </PieChart>
+    </ResponsiveContainer>
+  );
+}
+
+/**
+ * Trend Chart - for reports page
+ * Generic trend chart that supports different data types
+ */
+export function TrendChart({ type, data }: { type: 'sessions' | 'specs' | 'errors'; data: (TimeSeriesPoint | SpecTimeSeriesPoint)[] }) {
+  const chartData = data.map((point) => ({
+    date: formatChartDate(point.timestamp),
+    count: 'count' in point ? point.count : ('total' in point ? point.total : 0),
+    completed: 'completed' in point ? point.completed : undefined,
+    failed: 'failed' in point ? point.failed : undefined,
+  }));
+
+  if (type === 'sessions' || type === 'errors') {
+    return (
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+          <XAxis dataKey="date" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
+          <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
+          <Tooltip
+            contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }}
+          />
+          <Legend />
+          <Line
+            type="monotone"
+            dataKey="count"
+            stroke={type === 'errors' ? CHART_COLORS.danger : CHART_COLORS.primary}
+            strokeWidth={2}
+            dot={{ fill: type === 'errors' ? CHART_COLORS.danger : CHART_COLORS.primary }}
+            name={type === 'errors' ? 'Errors' : 'Sessions'}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    );
+  }
+
+  // specs type - area chart with stacked data
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <AreaChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+        <XAxis dataKey="date" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
+        <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
+        <Tooltip
+          contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }}
+        />
+        <Legend />
+        <Area
+          type="monotone"
+          dataKey="completed"
+          stackId="1"
+          stroke={CHART_COLORS.success}
+          fill={CHART_COLORS.success}
+          fillOpacity={0.6}
+          name="Completed"
+        />
+        <Area
+          type="monotone"
+          dataKey="failed"
+          stackId="1"
+          stroke={CHART_COLORS.danger}
+          fill={CHART_COLORS.danger}
+          fillOpacity={0.6}
+          name="Failed"
+        />
+      </AreaChart>
+    </ResponsiveContainer>
+  );
+}
+
+/**
+ * Comparison Chart - for reports page
+ * Compares multiple sessions side by side
+ */
+export function ComparisonChart({ sessions }: { sessions: SessionSummary[] }) {
+  const data = sessions.slice(0, 10).map((session) => ({
+    name: session.projectName?.slice(0, 12) || session.sessionId.slice(0, 8),
+    duration: Math.round((session.duration || 0) / 60),
+    successRate: Math.round((session.specSuccessRate || 0) * 100),
+    specs: session.completedSpecs,
+  }));
+
+  return (
+    <ResponsiveContainer width="100%" height={350}>
+      <BarChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+        <XAxis dataKey="name" stroke="#64748b" fontSize={11} tickLine={false} axisLine={false} />
+        <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} yAxisId="left" />
+        <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} yAxisId="right" orientation="right" />
+        <Tooltip
+          contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }}
+        />
+        <Legend />
+        <Bar yAxisId="left" dataKey="duration" fill={CHART_COLORS.primary} name="Duration (min)" radius={[4, 4, 0, 0]} />
+        <Bar yAxisId="right" dataKey="successRate" fill={CHART_COLORS.success} name="Success Rate (%)" radius={[4, 4, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );

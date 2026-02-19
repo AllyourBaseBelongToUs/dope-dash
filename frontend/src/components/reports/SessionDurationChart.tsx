@@ -70,7 +70,7 @@ export function SessionDurationChart({ sessions, type = 'bar' }: SessionDuration
           }}
           itemStyle={{ color: '#f1f5f9' }}
           labelStyle={{ color: '#94a3b8' }}
-          formatter={(value: number) => [`${value}m`, 'Duration']}
+          formatter={(value: number | undefined) => [`${value ?? 0}m`, 'Duration']}
         />
         <Legend
           wrapperStyle={{ color: '#94a3b8' }}

@@ -18,8 +18,11 @@ import {
 } from 'lucide-react';
 import type { Project, ProjectStatus, ProjectPriority } from '@/types';
 
+// Use a subset of ProjectControlAction that matches what BulkActionBar can produce
+type BulkActionResultAction = 'pause' | 'resume' | 'stop';
+
 interface BulkOperationResult {
-  action: 'pause' | 'resume' | 'stop';
+  action: BulkActionResultAction;
   total_requested: number;
   successful: number;
   failed: number;
@@ -323,7 +326,8 @@ export default function PortfolioPage() {
           selectedCount={selectedProjectIds.size}
           onDeselectAll={deselectAllProjects}
           onOperationComplete={(result) => {
-            setBulkOperationResult(result);
+            // Cast to subset type since BulkActionBar only produces pause|resume|stop
+            setBulkOperationResult(result as BulkOperationResult);
           }}
         />
       )}

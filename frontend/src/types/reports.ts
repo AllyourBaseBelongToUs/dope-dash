@@ -1,8 +1,10 @@
 // Report generation types
 
-// Import ReportFormat from index.ts to maintain single source of truth
-// Re-export ReportSchedule with 'monthly' option for reports
-export type { ReportFormat } from './index';
+// Import types from index.ts to maintain single source of truth
+import type { ReportFormat as ReportFormatBase, ReportSchedule as ReportScheduleBase } from './index';
+
+// Re-export with extended values for reports module
+export type ReportFormat = ReportFormatBase;
 export type ReportSchedule = 'daily' | 'weekly' | 'monthly' | 'none'; // FIXED: Added 'monthly' for reports, kept 'none' for compatibility
 export type ReportType = 'session' | 'trends' | 'comparison' | 'error_analysis';
 export type ReportStatus = 'pending' | 'generating' | 'completed' | 'failed';

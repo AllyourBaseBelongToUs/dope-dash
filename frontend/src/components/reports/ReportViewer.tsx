@@ -76,9 +76,9 @@ export function ReportViewer({ report, onClose, onDownload }: ReportViewerProps)
         <div className="border-b pb-4">
           <div className="flex items-start justify-between">
             <div>
-              <h2 className="text-2xl font-bold">{report.data.title}</h2>
+              <h2 className="text-2xl font-bold">{report.data?.title ?? report.title}</h2>
               <p className="text-sm text-slate-400 mt-1">
-                Generated: {new Date(report.data.generatedAt).toLocaleString()}
+                Generated: {new Date(report.data?.generatedAt ?? report.createdAt).toLocaleString()}
               </p>
             </div>
             <Badge variant="secondary" className="capitalize">
@@ -88,10 +88,10 @@ export function ReportViewer({ report, onClose, onDownload }: ReportViewerProps)
         </div>
 
         {/* Charts Section */}
-        {report.data.charts && report.data.charts.length > 0 && (
+        {report.data?.charts && report.data?.charts.length > 0 && (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Visualizations</h3>
-            {report.data.charts.map((chart, index) => (
+            {report.data?.charts.map((chart, index) => (
               <Card key={index} className="bg-slate-950/50 border-slate-800">
                 <CardHeader>
                   <CardTitle className="text-base">{chart.title}</CardTitle>
@@ -105,11 +105,11 @@ export function ReportViewer({ report, onClose, onDownload }: ReportViewerProps)
         )}
 
         {/* Sessions Summary */}
-        {report.data.sessions && report.data.sessions.length > 0 && (
+        {report.data?.sessions && report.data?.sessions.length > 0 && (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Session Summary</h3>
             <div className="grid gap-4">
-              {report.data.sessions.map((session) => (
+              {report.data?.sessions.map((session) => (
                 <Card key={session.sessionId} className="bg-slate-950/50 border-slate-800">
                   <CardContent className="pt-4">
                     <div className="flex items-start justify-between mb-3">
@@ -158,35 +158,35 @@ export function ReportViewer({ report, onClose, onDownload }: ReportViewerProps)
         )}
 
         {/* Trends Section */}
-        {report.data.trends && (
+        {report.data?.trends && (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Trends Overview</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Card className="bg-slate-950/50 border-slate-800">
                 <CardContent className="pt-4">
                   <p className="text-xs text-slate-400">Total Sessions</p>
-                  <p className="text-2xl font-bold">{report.data.trends.totalSessions}</p>
+                  <p className="text-2xl font-bold">{report.data?.trends.totalSessions}</p>
                 </CardContent>
               </Card>
               <Card className="bg-slate-950/50 border-slate-800">
                 <CardContent className="pt-4">
                   <p className="text-xs text-slate-400">Avg Duration</p>
                   <p className="text-2xl font-bold">
-                    {Math.round(report.data.trends.avgSessionDuration / 60)}m
+                    {Math.round(report.data?.trends.avgSessionDuration / 60)}m
                   </p>
                 </CardContent>
               </Card>
               <Card className="bg-slate-950/50 border-slate-800">
                 <CardContent className="pt-4">
                   <p className="text-xs text-slate-400">Total Specs</p>
-                  <p className="text-2xl font-bold">{report.data.trends.totalSpecRuns}</p>
+                  <p className="text-2xl font-bold">{report.data?.trends.totalSpecRuns}</p>
                 </CardContent>
               </Card>
               <Card className="bg-slate-950/50 border-slate-800">
                 <CardContent className="pt-4">
                   <p className="text-xs text-slate-400">Success Rate</p>
                   <p className="text-2xl font-bold">
-                    {report.data.trends.specSuccessRate.toFixed(1)}%
+                    {report.data?.trends.specSuccessRate.toFixed(1)}%
                   </p>
                 </CardContent>
               </Card>
@@ -195,7 +195,7 @@ export function ReportViewer({ report, onClose, onDownload }: ReportViewerProps)
         )}
 
         {/* Comparison Section */}
-        {report.data.comparison && (
+        {report.data?.comparison && (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Comparison Metrics</h3>
             <div className="grid grid-cols-2 gap-4">
@@ -203,7 +203,7 @@ export function ReportViewer({ report, onClose, onDownload }: ReportViewerProps)
                 <CardContent className="pt-4">
                   <p className="text-xs text-slate-400">Avg Duration</p>
                   <p className="text-xl font-bold">
-                    {Math.round(report.data.comparison.metrics.avgDuration / 60)}m
+                    {Math.round(report.data?.comparison.metrics.avgDuration / 60)}m
                   </p>
                 </CardContent>
               </Card>
@@ -211,7 +211,7 @@ export function ReportViewer({ report, onClose, onDownload }: ReportViewerProps)
                 <CardContent className="pt-4">
                   <p className="text-xs text-slate-400">Avg Success Rate</p>
                   <p className="text-xl font-bold">
-                    {report.data.comparison.metrics.avgSpecSuccessRate.toFixed(1)}%
+                    {report.data?.comparison.metrics.avgSpecSuccessRate.toFixed(1)}%
                   </p>
                 </CardContent>
               </Card>
@@ -220,13 +220,13 @@ export function ReportViewer({ report, onClose, onDownload }: ReportViewerProps)
         )}
 
         {/* Error Analysis Section */}
-        {report.data.errorAnalysis && (
+        {report.data?.errorAnalysis && (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Error Analysis</h3>
             <Card className="bg-slate-950/50 border-slate-800">
               <CardContent className="pt-4">
                 <p className="text-xs text-slate-400">Total Errors</p>
-                <p className="text-2xl font-bold">{report.data.errorAnalysis.totalErrors}</p>
+                <p className="text-2xl font-bold">{report.data?.errorAnalysis.totalErrors}</p>
               </CardContent>
             </Card>
           </div>

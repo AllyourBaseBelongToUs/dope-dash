@@ -2,14 +2,14 @@
 
 import * as Tooltip from '@radix-ui/react-tooltip';
 import { Clock, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
-import type { CommandHistoryEntry } from '@/types';
+import type { DashboardCommandEntry } from '@/types';
 
 interface CommandHistoryTooltipProps {
-  history: CommandHistoryEntry[];
+  history: DashboardCommandEntry[];
   children: React.ReactNode;
 }
 
-function getStatusIcon(status: CommandHistoryEntry['status']) {
+function getStatusIcon(status: DashboardCommandEntry['status']) {
   switch (status) {
     case 'pending':
       return <Loader2 className="h-3 w-3 text-yellow-500 animate-spin" />;

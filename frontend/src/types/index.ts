@@ -20,7 +20,7 @@ export type EventType =
   | 'subtask_complete';
 
 export interface WebSocketMessage {
-  type: 'event' | 'ping' | 'pong' | 'error' | 'info';
+  type: 'event' | 'ping' | 'pong' | 'error' | 'info' | 'quota_update' | 'quota_alert' | 'rate_limit_update' | 'rate_limit_detected' | 'rate_limit_resolved' | 'rate_limit_failed';
   id?: string;
   session_id?: string;
   event_type?: EventType;
@@ -425,4 +425,111 @@ export interface CommandStatsSummary {
   totalFavorites: number;
   recentCommands24h: number;
   avgDurationMs: number;
+}
+
+// Quota tracking types
+export interface QuotaUsage {
+  id: string;
+  provider_id: string;
+  provider_name: string;
+  project_id: string | null;
+  model: string;
+  current_requests: number;
+  current_tokens: number;
+  max_requests: number;
+  max_tokens: number;
+  quota_limit: number;
+  quota_limit_tokens?: number;
+  usage_percent: number;
+  is_over_limit: boolean;
+  remaining_requests: number;
+  remaining_tokens: number;
+  time_until_reset_seconds?: number;
+  overage_count?: number;
+  period_start: string;
+  period_end: string;
+  last_updated: string;
+}
+
+export interface QuotaAlert {
+  id: string;
+  provider_id: string;
+  provider_name: string;
+  type: 'warning' | 'critical' | 'exceeded';
+  alert_type: 'warning' | 'critical' | 'overage';
+  status: 'active' | 'acknowledged' | 'resolved';
+  metric: 'requests' | 'tokens' | 'cost';
+  threshold: number;
+  threshold_percent: number;
+  current_value: number;
+  current_usage: number;
+  quota_limit: number;
+  message: string;
+  created_at: string;
+  acknowledged_at: string | null;
+  resolved_at: string | null;
+  updated_at: string;
+  metadata: Record<string, unknown>;
+}
+
+export interface QuotaSummary {
+  total_providers: number;
+  active_providers: number;
+  total_requests: number;
+  total_tokens: number;
+  total_cost: number;
+  total_usage_percent: number;
+  alerts_count: number;
+  alerts_critical: number;
+  critical_alerts_count: number;
+  providers_over_limit: number;
+  last_updated: string;
+}
+
+export interface Provider {
+  id: string;
+  name: string;
+  display_name: string;
+  api_endpoint?: string;
+  rate_limit_rpm?: number;
+  rate_limit_tpm?: number;
+  rate_limit_tokens_per_day?: number;
+  models: string[];
+  enabled: boolean;
+  priority: number;
+}
+
+// Rate Limit tracking types
+export interface RateLimitEvent {
+  id: string;
+  provider_id: string;
+  provider_name: string;
+  model: string;
+  status: 'detected' | 'retrying' | 'resolved' | 'failed';
+  retry_count: number;
+  attempt_number: number;
+  max_attempts: number;
+  max_retries: number;
+  calculated_backoff_seconds?: number;
+  jitter_seconds?: number;
+  http_status_code?: number;
+  request_method?: string;
+  request_endpoint?: string;
+  retry_after_seconds?: number;
+  next_retry_at: string | null;
+  detected_at: string;
+  resolved_at: string | null;
+  failed_at?: string;
+  error_message?: string;
+  metadata: Record<string, unknown>;
+}
+
+export interface RateLimitEventSummary {
+  total_events: number;
+  active_events: number;
+  resolved_events: number;
+  failed_events: number;
+  total_retries: number;
+  avg_resolution_time_ms: number;
+  last_updated: string;
 }

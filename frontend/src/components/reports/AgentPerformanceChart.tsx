@@ -55,7 +55,7 @@ export function AgentPerformanceChart({ trends, type = 'bar' }: AgentPerformance
             cx="50%"
             cy="50%"
             labelLine={false}
-            label={({ agent, percent }) => `${agent}: ${(percent * 100).toFixed(0)}%`}
+            label={({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
             outerRadius={100}
             dataKey="sessions"
           >
@@ -74,7 +74,7 @@ export function AgentPerformanceChart({ trends, type = 'bar' }: AgentPerformance
             }}
             itemStyle={{ color: '#f1f5f9' }}
             labelStyle={{ color: '#94a3b8' }}
-            formatter={(value: number) => [value, 'Sessions']}
+            formatter={(value: number | undefined) => [value ?? 0, 'Sessions']}
           />
         </PieChart>
       </ResponsiveContainer>
@@ -106,7 +106,7 @@ export function AgentPerformanceChart({ trends, type = 'bar' }: AgentPerformance
           }}
           itemStyle={{ color: '#f1f5f9' }}
           labelStyle={{ color: '#94a3b8' }}
-          formatter={(value: number) => [value, 'Sessions']}
+          formatter={(value: number | undefined) => [value ?? 0, 'Sessions']}
         />
         <Legend
           wrapperStyle={{ color: '#94a3b8' }}

@@ -387,8 +387,7 @@ export default function ReportsPage() {
         onOpenChange={setShowGenerateDialog}
         onGenerate={handleGenerateReport}
         sessions={sessions}
-        templates={templates}
-        isGenerating={isGenerating}
+        loading={isGenerating}
       />
 
       <ScheduleSettingsDialog
