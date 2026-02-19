@@ -2,7 +2,7 @@
 
 ## Features Implemented
 
-Three nice-to-have features have been successfully added to the Settings page for the Ralph Monitoring Dashboard.
+Three nice-to-have features have been successfully added to the Settings page for the Dope-Dash.
 
 ### 1. Export/Import Settings
 

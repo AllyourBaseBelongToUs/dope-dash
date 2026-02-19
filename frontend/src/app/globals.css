@@ -57,3 +57,40 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Fix cmdk CommandDialog positioning and z-index */
+[cmdk-root] {
+  z-index: 9999 !important;
+}
+
+/* Fix cmdk dialog overlay - ensure it covers full viewport and is centered */
+[cmdk-dialog] {
+  z-index: 9999 !important;
+}
+
+/* The overlay should be fixed fullscreen */
+[data-radix-presenter-content] {
+  z-index: 9999 !important;
+}
+
+/* Radix Dialog Overlay - ensure proper backdrop */
+[data-state="open"][data-radix-dialog-overlay] {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9998 !important;
+  background: rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Radix Dialog Content - center the dialog */
+[data-radix-dialog-content] {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  z-index: 9999 !important;
+}
+
+/* Ensure cmdk dialog overlay is above Next.js error overlay */
+[cmdk-dialog] ~ * {
+  z-index: 9998 !important;
+}

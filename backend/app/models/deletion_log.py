@@ -73,7 +73,8 @@ class DeletionLog(Base, TimestampMixin):
         Text,
         nullable=True,
     )
-    metadata: Mapped[dict[str, Any]] = mapped_column(
+    deletion_metadata: Mapped[dict[str, Any]] = mapped_column(
+        "deletion_metadata",
         JSON,
         nullable=False,
         default=dict,
@@ -107,7 +108,7 @@ class DeletionLogBase(BaseModel):
     entity_id: uuid.UUID
     deletion_type: str
     deleted_by: str | None = None
-    metadata: dict[str, Any] = {}
+    deletion_metadata: dict[str, Any] = {}
     session_id: uuid.UUID | None = None
     project_name: str | None = None
 

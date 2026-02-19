@@ -7,6 +7,7 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from typing import Any
 
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import (
     AsyncConnection,
     AsyncEngine,
@@ -83,10 +84,9 @@ class DatabaseConnectionManager:
             # Use NullPool for tests - connections are closed after each use
             engine_params["poolclass"] = NullPool
         else:
-            # Use QueuePool for production with proper sizing
+            # Use default async pool for production (AsyncAdaptedQueuePool is automatic)
             engine_params.update(
                 {
-                    "poolclass": QueuePool,
                     "pool_size": settings.db_pool_size,  # Default: 20
                     "max_overflow": settings.db_max_overflow,  # Default: 10
                     "pool_timeout": settings.db_pool_timeout,  # Default: 30s
@@ -168,7 +168,7 @@ class DatabaseConnectionManager:
         """
         try:
             async with self.get_connection() as conn:
-                await conn.execute("SELECT 1")
+                await conn.execute(text("SELECT 1"))
             return True
         except Exception:  # noqa: BLE001
             return False

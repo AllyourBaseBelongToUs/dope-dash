@@ -19,7 +19,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = '004_add_soft_delete_columns'
-down_revision: Union[str, None] = '003_add_agent_metadata_columns'
+down_revision: Union[str, None] = '003_add_agent_metadata'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

@@ -429,7 +429,13 @@ export function CommandPalette({ sessions }: CommandPaletteProps) {
         </button>
       </div>
 
-      <CommandDialog open={open} onOpenChange={setOpen}>
+      <CommandDialog
+        open={open}
+        onOpenChange={setOpen}
+        label="Command Palette"
+        overlayClassName="fixed inset-0 z-[9998] bg-black/80"
+        contentClassName="fixed left-1/2 top-1/2 z-[9999] -translate-x-1/2 -translate-y-1/2 bg-background border border-border rounded-lg shadow-2xl max-w-xl w-[90vw] overflow-hidden"
+      >
         <div className="flex flex-col max-h-[600px]">
           {/* Session Selector */}
           {activeSessions.length > 1 && (

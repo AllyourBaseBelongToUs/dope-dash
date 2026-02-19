@@ -2,13 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  // Enable strict ESLint checking - fail build on errors
-  eslint: {
-    ignoreDuringBuilds: false, // FIXED: Now fails build on ESLint errors
-  },
+  // Note: ESLint config removed in Next.js 16 - use eslint.config.js instead
   // Enable strict TypeScript checking - fail build on type errors
   typescript: {
-    ignoreBuildErrors: false, // FIXED: Now fails build on TypeScript errors
+    ignoreBuildErrors: false,
   },
 };
 

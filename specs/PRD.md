@@ -1,4 +1,4 @@
-# Ralph Inferno Monitoring Dashboard - Product Requirements Document
+# Dope-Dash - Product Requirements Document
 
 **Date:** 2026-01-30
 **Project:** Dope-Dash

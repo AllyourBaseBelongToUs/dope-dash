@@ -1,5 +1,5 @@
 #!/bin/bash
-# Ralph Monitoring Dashboard - Microservices Startup Script
+# Dope-Dash - Microservices Startup Script
 # Starts all backend services in the correct order
 
 set -e
@@ -12,7 +12,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 echo -e "${BLUE}========================================${NC}"
-echo -e "${BLUE}Ralph Monitoring Dashboard${NC}"
+echo -e "${BLUE}Dope-Dash${NC}"
 echo -e "${BLUE}Microservices Startup Script${NC}"
 echo -e "${BLUE}========================================${NC}"
 echo ""

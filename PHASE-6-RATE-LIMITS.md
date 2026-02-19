@@ -10,7 +10,7 @@
 
 ## Executive Summary
 
-**Rate Limit & Quota Management** provides intelligent API rate limit protection, real-time quota monitoring, and automated safeguards for the Ralph Monitoring Dashboard. It prevents 429 errors, manages request throttling, and ensures projects don't exhaust their API quotas unexpectedly.
+**Rate Limit & Quota Management** provides intelligent API rate limit protection, real-time quota monitoring, and automated safeguards for the Dope-Dash. It prevents 429 errors, manages request throttling, and ensures projects don't exhaust their API quotas unexpectedly.
 
 **Key Philosophy:** "Set and forget" quota protection - monitor, alert, throttle, and auto-pause automatically based on configurable thresholds.
 
@@ -1015,7 +1015,7 @@ class AgentPoolRateLimitManager {
 
 ## Conclusion
 
-**Rate Limit & Quota Management** adds intelligent API protection to the Ralph Monitoring Dashboard. By automatically detecting rate limits, retrying with backoff, throttling requests, and pausing projects at critical thresholds, it ensures your autonomous agents never exhaust their quotas unexpectedly.
+**Rate Limit & Quota Management** adds intelligent API protection to the Dope-Dash. By automatically detecting rate limits, retrying with backoff, throttling requests, and pausing projects at critical thresholds, it ensures your autonomous agents never exhaust their quotas unexpectedly.
 
 **Key Benefits:**
 - **Set and Forget:** Configure thresholds once, protection runs automatically
@@ -1024,7 +1024,7 @@ class AgentPoolRateLimitManager {
 - **CLI Tools:** `/quota` command for terminal users and scripting
 - **Full Visibility:** Dashboard + CLI provide complete quota transparency
 
-**Production Ready:** This design is comprehensive and ready for implementation as Phase 6 of the Ralph Monitoring Dashboard.
+**Production Ready:** This design is comprehensive and ready for implementation as Phase 6 of the Dope-Dash.
 
 ---
 

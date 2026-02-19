@@ -1,5 +1,5 @@
 #!/bin/bash
-# Ralph Monitoring Dashboard - Microservices Stop Script
+# Dope-Dash - Microservices Stop Script
 # Stops all backend services gracefully
 
 set -e
@@ -12,7 +12,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 echo -e "${BLUE}========================================${NC}"
-echo -e "${BLUE}Ralph Monitoring Dashboard${NC}"
+echo -e "${BLUE}Dope-Dash${NC}"
 echo -e "${BLUE}Microservices Stop Script${NC}"
 echo -e "${BLUE}========================================${NC}"
 echo ""
