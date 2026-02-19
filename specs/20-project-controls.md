@@ -1,6 +1,6 @@
 # Spec: Project Controls
 
-## Status: 🟡 TODO (Phase 5)
+## Status: ✅ COMPLETED
 
 ## Objective
 Add per-project controls (pause, resume, skip, stop, retry, restart)

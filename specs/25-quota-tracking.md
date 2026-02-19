@@ -1,6 +1,6 @@
 # Spec: Quota Tracking
 
-## Status: 🟡 TODO (Phase 6)
+## Status: ⚠️ PARTIAL (Frontend only)
 
 ## Objective
 Real-time quota tracking per provider (Claude, Gemini, OpenAI, Cursor)

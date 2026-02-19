@@ -1,6 +1,6 @@
 # Spec: Request Queue
 
-## Status: 🟡 TODO (Phase 6)
+## Status: ⚠️ PARTIAL (Backend only)
 
 ## Objective
 Request queue and throttling when approaching limits

@@ -56,6 +56,23 @@ from app.models.command_history import (
     CommandHistoryListResponse,
     CommandTemplate,
 )
+from app.models.quota import (
+    Provider,
+    ProviderType,
+    QuotaUsage,
+    QuotaUsageResponse,
+    ProviderCreate,
+    ProviderResponse,
+    RequestQueue,
+    RequestQueueCreate,
+    RequestQueueResponse,
+    QueuePriority,
+    QueueStatus,
+    QueueStatsResponse,
+    QuotaResetType,
+    QuotaAlertType,
+    QuotaAlertStatus,
+)
 
 __all__ = [
     # Base
@@ -128,4 +145,20 @@ __all__ = [
     "CommandHistoryEntry",
     "CommandHistoryListResponse",
     "CommandTemplate",
+    # Quota
+    "Provider",
+    "ProviderType",
+    "QuotaUsage",
+    "QuotaUsageResponse",
+    "ProviderCreate",
+    "ProviderResponse",
+    "RequestQueue",
+    "RequestQueueCreate",
+    "RequestQueueResponse",
+    "QueuePriority",
+    "QueueStatus",
+    "QueueStatsResponse",
+    "QuotaResetType",
+    "QuotaAlertType",
+    "QuotaAlertStatus",
 ]

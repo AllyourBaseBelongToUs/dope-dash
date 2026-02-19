@@ -1,6 +1,6 @@
 # Spec: Agent Pool Management
 
-## Status: 🟢 DONE
+## Status: ❌ NOT IMPLEMENTED
 
 ## Objective
 Agent pool management with load balancing
