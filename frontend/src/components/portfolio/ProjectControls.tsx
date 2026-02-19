@@ -8,6 +8,8 @@ import {
   RotateCcw,
   RotateCw,
   Loader2,
+  ListOrdered,
+  XCircle,
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -32,7 +34,9 @@ interface ProjectControlsProps {
 const getAvailableControls = (status: ProjectStatus) => {
   switch (status) {
     case 'idle':
-      return ['restart'];
+      return ['queue', 'restart'];
+    case 'queued':
+      return ['cancel'];
     case 'running':
       return ['pause', 'stop', 'skip'];
     case 'paused':
@@ -41,6 +45,8 @@ const getAvailableControls = (status: ProjectStatus) => {
       return ['retry', 'stop', 'restart'];
     case 'completed':
       return ['restart'];
+    case 'cancelled':
+      return ['queue', 'restart'];
     default:
       return [];
   }
@@ -89,6 +95,20 @@ const controlConfigs = {
     variant: 'outline' as const,
     requiresConfirmation: true,
   },
+  queue: {
+    icon: ListOrdered,
+    label: 'Queue',
+    description: 'Add this project to the queue for processing.',
+    variant: 'default' as const,
+    requiresConfirmation: false,
+  },
+  cancel: {
+    icon: XCircle,
+    label: 'Cancel',
+    description: 'Cancel this queued project and return it to idle state.',
+    variant: 'outline' as const,
+    requiresConfirmation: false,
+  },
 };
 
 export function ProjectControls({ project, onControlApplied }: ProjectControlsProps) {
@@ -101,6 +121,8 @@ export function ProjectControls({ project, onControlApplied }: ProjectControlsPr
   const stopProject = usePortfolioStore((state) => state.stopProject);
   const retryProject = usePortfolioStore((state) => state.retryProject);
   const restartProject = usePortfolioStore((state) => state.restartProject);
+  const queueProject = usePortfolioStore((state) => state.queueProject);
+  const cancelProject = usePortfolioStore((state) => state.cancelProject);
 
   const availableControls = getAvailableControls(project.status);
 
@@ -126,6 +148,12 @@ export function ProjectControls({ project, onControlApplied }: ProjectControlsPr
           break;
         case 'restart':
           result = await restartProject(project.id);
+          break;
+        case 'queue':
+          result = await queueProject(project.id);
+          break;
+        case 'cancel':
+          result = await cancelProject(project.id);
           break;
       }
 

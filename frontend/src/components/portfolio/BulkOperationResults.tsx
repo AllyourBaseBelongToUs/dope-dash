@@ -31,6 +31,8 @@ const actionLabels: Record<ProjectControlAction, string> = {
   stop: 'Stopped',
   retry: 'Retried',
   restart: 'Restarted',
+  queue: 'Queued',
+  cancel: 'Cancelled',
 };
 
 export function BulkOperationResults({

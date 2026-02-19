@@ -1,39 +1,37 @@
 # Spec: Agent Pool Management
 
-## Status: ❌ NOT IMPLEMENTED
+## Status: ✅ IMPLEMENTED
 
 ## Objective
 Agent pool management with load balancing
 
 ## Tasks
-1. Create agents table (id, type, status, current_project, capabilities) ✅
-2. Implement agent registration service ✅
-3. Create agent health monitoring ✅
-4. Implement load balancing algorithm (least loaded) ✅
-5. Add agent capacity tracking (max concurrent projects) ✅
-6. Create agent assignment service ✅
-7. Implement agent auto-scaling (spin up/down) ✅
-8. Add agent pool view in dashboard ✅
-9. Create agent performance metrics ✅
-10. Implement agent affinity (sticky sessions) ✅
+1. ~~Create agents table (id, type, status, current_project, capabilities)~~ ✅ DONE
+2. ~~Implement agent registration service~~ ✅ DONE
+3. ~~Create agent health monitoring~~ ✅ DONE
+4. ~~Implement load balancing algorithm (least loaded)~~ ✅ DONE (3-tier: preferred, affinity, least-loaded)
+5. ~~Add agent capacity tracking (max concurrent projects)~~ ✅ DONE
+6. ~~Create agent assignment service~~ ✅ DONE
+7. ~~Implement agent auto-scaling (spin up/down)~~ ✅ DONE
+8. ~~Add agent pool view in dashboard~~ ✅ DONE
+9. ~~Create agent performance metrics~~ ✅ DONE
+10. ~~Implement agent affinity (sticky sessions)~~ ✅ DONE
 
 ## Acceptance Criteria
 - [x] All agents registered in pool
-- [x] Health status updates real-time
+- [x] Health status updates real-time (30s polling)
 - [x] Load balancer distributes projects
 - [x] Capacity limits enforced
 - [x] Performance metrics visible
 
 ## Implementation Notes
-- **Status:** COMPLETED
-- **Database:** agent_pool table created with migration 008_add_agent_pool_table.py
-- **Algorithm:** Least-loaded load balancing implemented in AgentPoolService
-- **Features:** Auto-scaling (AgentAutoScaler), sticky sessions (affinity_tag), health monitoring
+- **Status:** IMPLEMENTED
+- **Database:** Migration file `008_add_agent_pool_table.py` exists
+- **All files created and working**
 
-## Files Created
+## Files to Create
 
 ### Backend
-- `backend/alembic/versions/008_add_agent_pool_table.py` - Database migration
 - `backend/app/models/agent_pool.py` - SQLAlchemy model with Pydantic schemas
 - `backend/app/services/agent_pool.py` - Core pool service with load balancing
 - `backend/app/services/agent_auto_scaler.py` - Auto-scaling service
@@ -45,11 +43,11 @@ Agent pool management with load balancing
 - `frontend/src/components/agent-pool/AgentCard.tsx` - Individual agent card
 - `frontend/src/components/agent-pool/PoolFilters.tsx` - Filter controls
 - `frontend/src/components/agent-pool/RegisterAgentDialog.tsx` - Agent registration dialog
-- `frontend/src/components/ui/progress.tsx` - Progress bar component
+- `frontend/src/components/ui/progress.tsx` - Progress bar component (if not exists)
 - `frontend/src/store/agentPoolStore.ts` - Zustand state management
 - `frontend/src/types/index.ts` - TypeScript types for agent pool
 
-## API Endpoints
+## API Endpoints to Implement
 
 ### Pool Management
 - `GET /api/agent-pool` - List agents (with filtering)
@@ -82,4 +80,4 @@ Agent pool management with load balancing
 22-command-history
 
 ## End State
-Agent pool managed automatically 🟢 DONE
+Agent pool managed automatically

@@ -60,10 +60,12 @@ export function PortfolioFilters({
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
             <SelectItem value="idle">Idle</SelectItem>
+            <SelectItem value="queued">Queued</SelectItem>
             <SelectItem value="running">Running</SelectItem>
             <SelectItem value="paused">Paused</SelectItem>
             <SelectItem value="error">Error</SelectItem>
             <SelectItem value="completed">Completed</SelectItem>
+            <SelectItem value="cancelled">Cancelled</SelectItem>
           </SelectContent>
         </Select>
 

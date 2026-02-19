@@ -440,6 +440,48 @@ class PortfolioService {
   }
 
   /**
+   * Queue a project for processing
+   */
+  async queueProject(projectId: string): Promise<ControlResponse> {
+    try {
+      const response = await fetch(`${this.baseUrl}/api/projects/${projectId}/queue`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Failed to queue project');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error queueing project:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Cancel a queued project
+   */
+  async cancelProject(projectId: string): Promise<ControlResponse> {
+    try {
+      const response = await fetch(`${this.baseUrl}/api/projects/${projectId}/cancel`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Failed to cancel project');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error cancelling project:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Bulk control multiple projects
    */
   async bulkControlProjects(projectIds: string[], action: ProjectControlAction): Promise<BulkOperationResponse> {

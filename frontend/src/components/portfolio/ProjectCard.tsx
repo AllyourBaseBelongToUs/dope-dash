@@ -13,6 +13,8 @@ import {
   Eye,
   Trash2,
   RefreshCw,
+  ListOrdered,
+  XCircle,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -40,6 +42,8 @@ const getStatusColor = (status: ProjectStatus): string => {
   switch (status) {
     case 'idle':
       return 'bg-gray-500/10 text-gray-500 border-gray-500/20';
+    case 'queued':
+      return 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20';
     case 'running':
       return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
     case 'paused':
@@ -48,6 +52,8 @@ const getStatusColor = (status: ProjectStatus): string => {
       return 'bg-red-500/10 text-red-500 border-red-500/20';
     case 'completed':
       return 'bg-green-500/10 text-green-500 border-green-500/20';
+    case 'cancelled':
+      return 'bg-slate-500/10 text-slate-500 border-slate-500/20';
     default:
       return '';
   }
@@ -72,6 +78,8 @@ const getStatusIcon = (status: ProjectStatus) => {
   switch (status) {
     case 'idle':
       return <Clock className="h-3 w-3" />;
+    case 'queued':
+      return <ListOrdered className="h-3 w-3" />;
     case 'running':
       return <Activity className="h-3 w-3 animate-pulse" />;
     case 'paused':
@@ -80,6 +88,8 @@ const getStatusIcon = (status: ProjectStatus) => {
       return <AlertCircle className="h-3 w-3" />;
     case 'completed':
       return <CheckCircle2 className="h-3 w-3" />;
+    case 'cancelled':
+      return <XCircle className="h-3 w-3" />;
   }
 };
 

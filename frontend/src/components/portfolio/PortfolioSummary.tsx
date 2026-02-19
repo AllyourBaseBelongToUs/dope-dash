@@ -8,6 +8,8 @@ import {
   Clock,
   TrendingUp,
   Users,
+  ListOrdered,
+  XCircle,
 } from 'lucide-react';
 import type { ProjectSummary, ProjectStatus, ProjectPriority } from '@/types';
 
@@ -18,18 +20,22 @@ interface PortfolioSummaryProps {
 
 const statusIcons: Record<ProjectStatus, React.ReactNode> = {
   idle: <Clock className="h-4 w-4" />,
+  queued: <ListOrdered className="h-4 w-4" />,
   running: <Activity className="h-4 w-4 animate-pulse" />,
   paused: <Clock className="h-4 w-4" />,
   error: <AlertTriangle className="h-4 w-4" />,
   completed: <CheckCircle2 className="h-4 w-4" />,
+  cancelled: <XCircle className="h-4 w-4" />,
 };
 
 const statusColors: Record<ProjectStatus, string> = {
   idle: 'bg-gray-500/10 text-gray-500 border-gray-500/20',
+  queued: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
   running: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
   paused: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
   error: 'bg-red-500/10 text-red-500 border-red-500/20',
   completed: 'bg-green-500/10 text-green-500 border-green-500/20',
+  cancelled: 'bg-slate-500/10 text-slate-500 border-slate-500/20',
 };
 
 const priorityColors: Record<ProjectPriority, string> = {

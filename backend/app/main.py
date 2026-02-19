@@ -158,6 +158,7 @@ from app.api.retention import router as retention_router
 from app.api.portfolio import router as portfolio_router
 from app.api.projects import router as projects_router
 from app.api.request_queue import router as request_queue_router
+from app.api.agent_pool import router as agent_pool_router
 
 app.include_router(query_router)
 app.include_router(reports_router)
@@ -165,3 +166,4 @@ app.include_router(retention_router)
 app.include_router(portfolio_router)
 app.include_router(projects_router)
 app.include_router(request_queue_router)
+app.include_router(agent_pool_router)

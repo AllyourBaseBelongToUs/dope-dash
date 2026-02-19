@@ -73,6 +73,28 @@ from app.models.quota import (
     QuotaAlertType,
     QuotaAlertStatus,
 )
+from app.models.agent_pool import (
+    AgentPool,
+    PoolAgentStatus,
+    ScalingAction,
+    AgentPoolCreate,
+    AgentPoolUpdate,
+    AgentPoolResponse,
+    AgentPoolListResponse,
+    PoolMetrics,
+    PoolHealthReport,
+    ScalingRecommendation,
+    ScalingPolicy,
+    ScalingEventCreate,
+    ScalingEventResponse,
+    AgentAssignRequest,
+    AgentAssignResponse,
+    AgentHeartbeatRequest,
+)
+from app.models.state_transition import (
+    StateTransition,
+    StateTransitionSource,
+)
 
 __all__ = [
     # Base
@@ -161,4 +183,24 @@ __all__ = [
     "QuotaResetType",
     "QuotaAlertType",
     "QuotaAlertStatus",
+    # AgentPool
+    "AgentPool",
+    "PoolAgentStatus",
+    "ScalingAction",
+    "AgentPoolCreate",
+    "AgentPoolUpdate",
+    "AgentPoolResponse",
+    "AgentPoolListResponse",
+    "PoolMetrics",
+    "PoolHealthReport",
+    "ScalingRecommendation",
+    "ScalingPolicy",
+    "ScalingEventCreate",
+    "ScalingEventResponse",
+    "AgentAssignRequest",
+    "AgentAssignResponse",
+    "AgentHeartbeatRequest",
+    # StateTransition
+    "StateTransition",
+    "StateTransitionSource",
 ]
