@@ -294,3 +294,37 @@ class BaseAgentWrapper(BaseWrapperInterface, ABC):
             if db_session_obj:
                 db_session_obj.last_heartbeat = datetime.now(timezone.utc)
                 await db_session.commit()
+
+    async def send_control(
+        self,
+        control: str,
+        metadata: dict[str, Any] | None = None,
+    ) -> bool:
+        """Send a control command to the agent.
+
+        This method handles control commands like pause, resume, stop, skip, retry, restart.
+        It emits control events that can be picked up by the agent's monitoring loop.
+
+        Args:
+            control: Control command (pause, resume, stop, skip, retry, restart)
+            metadata: Optional metadata for the control command
+
+        Returns:
+            True if control was sent successfully, False otherwise
+        """
+        if not self._running or not self._session_id:
+            logger.warning(f"Cannot send control to {self.agent_type.value} wrapper: not running or no session")
+            return False
+
+        # Emit control event
+        await self._emit_event(
+            "control_command",
+            {
+                "control": control,
+                "metadata": metadata or {},
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            },
+        )
+
+        logger.info(f"Sent {control} control to {self.agent_type.value} wrapper for {self.project_name}")
+        return True
