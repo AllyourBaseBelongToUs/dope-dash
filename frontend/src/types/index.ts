@@ -709,3 +709,52 @@ export interface AgentPoolUpdateRequest {
   affinityTag?: string;
   priority?: number;
 }
+
+// Auto-pause types
+export type AutoPauseTrigger = 'quota_threshold' | 'quota_exceeded' | 'manual_override';
+export type AutoPauseStatus = 'pending' | 'paused' | 'resumed' | 'overridden' | 'cancelled';
+
+export interface AutoPauseSettings {
+  enabled: boolean;
+  threshold_percent: number;
+  auto_resume: boolean;
+  warning_threshold: number;
+}
+
+export interface AutoPauseLogEntry {
+  id: string;
+  project_id: string;
+  trigger: AutoPauseTrigger;
+  status: AutoPauseStatus;
+  threshold_percent: number;
+  priority_at_pause: string;
+  paused_at: string | null;
+  resumed_at: string | null;
+  override_by: string | null;
+  override_at: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AutoPauseLogListResponse {
+  items: AutoPauseLogEntry[];
+  total: number;
+}
+
+export interface AutoPauseStatusResponse {
+  enabled: boolean;
+  current_threshold: number;
+  warning_threshold: number;
+  auto_resume_enabled: boolean;
+  last_pause_at: string | null;
+  last_resume_at: string | null;
+  total_pauses: number;
+  total_resumes: number;
+}
+
+export interface AutoPauseSettingsResponse {
+  project_id: string;
+  project_name: string;
+  settings: AutoPauseSettings;
+}

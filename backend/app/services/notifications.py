@@ -32,6 +32,10 @@ class NotificationType(str, Enum):
     CLEANUP_FAILED = "cleanup_failed"
     RETENTION_EXTENDED = "retention_extended"
     MANUAL_CLEANUP_TRIGGERED = "manual_cleanup_triggered"
+    # Auto-pause notifications
+    AUTO_PAUSE_WARNING = "auto_pause_warning"
+    AUTO_PAUSE_TRIGGERED = "auto_pause_triggered"
+    AUTO_RESUME_TRIGGERED = "auto_resume_triggered"
 
 
 class Notification(BaseModel):
@@ -231,6 +235,83 @@ class NotificationService:
             title=f"Manual {mode} Triggered",
             message=f"Manual {mode.lower()} has been initiated.",
             data={"dry_run": dry_run},
+        )
+
+    def auto_pause_warning(
+        self,
+        project_name: str,
+        usage_percent: float,
+        threshold_percent: float,
+    ) -> Notification:
+        """Create notification for auto-pause warning.
+
+        Args:
+            project_name: Name of the project
+            usage_percent: Current quota usage percentage
+            threshold_percent: Threshold at which auto-pause will trigger
+
+        Returns:
+            Created notification
+        """
+        return self.create_notification(
+            notification_type=NotificationType.AUTO_PAUSE_WARNING,
+            severity=NotificationSeverity.WARNING,
+            title=f"Auto-Pause Warning: {project_name}",
+            message=f"Project {project_name} is at {usage_percent:.1f}% quota. "
+            f"It will auto-pause at {threshold_percent:.1f}%.",
+            data={
+                "project_name": project_name,
+                "usage_percent": usage_percent,
+                "threshold_percent": threshold_percent,
+            },
+        )
+
+    def auto_pause_triggered(
+        self,
+        project_name: str,
+        trigger: str,
+        threshold_percent: float,
+    ) -> Notification:
+        """Create notification for auto-pause triggered.
+
+        Args:
+            project_name: Name of the project
+            trigger: What triggered the pause
+            threshold_percent: Quota percentage at pause time
+
+        Returns:
+            Created notification
+        """
+        return self.create_notification(
+            notification_type=NotificationType.AUTO_PAUSE_TRIGGERED,
+            severity=NotificationSeverity.WARNING,
+            title=f"Auto-Paused: {project_name}",
+            message=f"Project {project_name} was auto-paused at {threshold_percent:.1f}% "
+            f"quota due to {trigger}.",
+            data={
+                "project_name": project_name,
+                "trigger": trigger,
+                "threshold_percent": threshold_percent,
+            },
+        )
+
+    def auto_resume_triggered(self, project_name: str) -> Notification:
+        """Create notification for auto-resume triggered.
+
+        Args:
+            project_name: Name of the project
+
+        Returns:
+            Created notification
+        """
+        return self.create_notification(
+            notification_type=NotificationType.AUTO_RESUME_TRIGGERED,
+            severity=NotificationSeverity.INFO,
+            title=f"Auto-Resumed: {project_name}",
+            message=f"Project {project_name} was auto-resumed after quota reset.",
+            data={
+                "project_name": project_name,
+            },
         )
 
     def get_all_notifications(self, unread_only: bool = False) -> list[Notification]:

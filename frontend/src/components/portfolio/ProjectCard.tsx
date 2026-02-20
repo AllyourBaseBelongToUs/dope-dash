@@ -15,6 +15,7 @@ import {
   RefreshCw,
   ListOrdered,
   XCircle,
+  AlertTriangle,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -159,6 +160,15 @@ export function ProjectCard({ project, onView, onSync, onDelete, isUpdating, onC
           <Badge className={getPriorityColor(project.priority)} variant="outline">
             {project.priority}
           </Badge>
+          {/* Auto-paused indicator */}
+          {project.metadata && Boolean(project.metadata.auto_paused) && (
+            <Badge className="bg-orange-500/10 text-orange-500 border-orange-500/20" variant="outline">
+              <span className="flex items-center gap-1">
+                <AlertTriangle className="h-3 w-3" />
+                Auto-paused
+              </span>
+            </Badge>
+          )}
         </div>
 
         {/* Progress Bar */}
