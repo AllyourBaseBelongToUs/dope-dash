@@ -640,7 +640,7 @@ class QuotaAlert(Base, TimestampMixin):
     )
     # New fields for multi-channel alerting and escalation
     alert_channels: Mapped[list[str]] = mapped_column(
-        postgresql.ARRAY(Text),
+        ARRAY(Text),
         nullable=False,
         default=list,
         comment="Channels the alert was sent to (dashboard, desktop, audio)",
