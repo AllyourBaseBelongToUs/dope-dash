@@ -1,0 +1,8 @@
+{
+  "agent": "claude",
+  "language": "en",
+  "ntfy_enabled": false,
+  "ntfy_topic": "",
+  "build_cmd": "",
+  "test_cmd": ""
+}
