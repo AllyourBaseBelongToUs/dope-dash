@@ -5,11 +5,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { QuotaDashboard } from '@/components/quota/QuotaDashboard';
 import { RateLimitDashboard } from '@/components/quota/RateLimitDashboard';
 import { RequestQueueDashboard } from '@/components/quota/RequestQueueDashboard';
+import { AlertBanner } from '@/components/quota/AlertBanner';
+import { AlertHistory } from '@/components/quota/AlertHistory';
+import { AlertConfigPanel } from '@/components/quota/AlertConfigPanel';
 import {
   Gauge,
   AlertTriangle,
   ListOrdered,
   Settings,
+  Bell,
+  History,
 } from 'lucide-react';
 
 export default function QuotaPage() {
@@ -43,8 +48,13 @@ export default function QuotaPage() {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-6">
+        {/* Active Alert Banner - Shows at the top */}
+        <div className="mb-6">
+          <AlertBanner maxHeight={200} />
+        </div>
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 lg:w-[500px] mb-6">
+          <TabsList className="grid w-full grid-cols-6 lg:w-[750px] mb-6">
             <TabsTrigger value="usage" className="gap-2">
               <Gauge className="h-4 w-4" />
               Usage
@@ -56,6 +66,18 @@ export default function QuotaPage() {
             <TabsTrigger value="queue" className="gap-2">
               <ListOrdered className="h-4 w-4" />
               Queue
+            </TabsTrigger>
+            <TabsTrigger value="alerts" className="gap-2">
+              <Bell className="h-4 w-4" />
+              Alerts
+            </TabsTrigger>
+            <TabsTrigger value="history" className="gap-2">
+              <History className="h-4 w-4" />
+              History
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="gap-2">
+              <Settings className="h-4 w-4" />
+              Settings
             </TabsTrigger>
           </TabsList>
 
@@ -69,6 +91,18 @@ export default function QuotaPage() {
 
           <TabsContent value="queue" className="space-y-6">
             <RequestQueueDashboard />
+          </TabsContent>
+
+          <TabsContent value="alerts" className="space-y-6">
+            <AlertHistory showFilters={true} limit={50} />
+          </TabsContent>
+
+          <TabsContent value="history" className="space-y-6">
+            <AlertHistory showFilters={true} limit={100} />
+          </TabsContent>
+
+          <TabsContent value="settings" className="space-y-6">
+            <AlertConfigPanel />
           </TabsContent>
         </Tabs>
       </div>

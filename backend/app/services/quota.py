@@ -534,6 +534,27 @@ class QuotaService:
     async def _check_thresholds(self, usage: QuotaUsage) -> None:
         """Check usage thresholds and create alerts if needed.
 
+        Uses the enhanced QuotaAlertService for multi-channel alerting
+        with cooldown, escalation, and per-provider configuration.
+
+        Args:
+            usage: QuotaUsage instance
+        """
+        try:
+            from app.services.quota_alerts import get_quota_alert_service
+
+            alert_service = get_quota_alert_service(self._session)
+            await alert_service.check_and_send_alert(usage)
+        except Exception as e:
+            logger.warning(f"Failed to send enhanced alert, falling back to basic: {e}")
+            # Fallback to basic alerting
+            await self._check_thresholds_basic(usage)
+
+    async def _check_thresholds_basic(self, usage: QuotaUsage) -> None:
+        """Basic threshold checking without enhanced features.
+
+        Fallback used when QuotaAlertService is unavailable.
+
         Args:
             usage: QuotaUsage instance
         """

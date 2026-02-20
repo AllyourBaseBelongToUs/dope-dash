@@ -160,6 +160,7 @@ from app.api.projects import router as projects_router
 from app.api.request_queue import router as request_queue_router
 from app.api.agent_pool import router as agent_pool_router
 from app.api.quota import router as quota_router
+from app.api.quota_alerts import router as quota_alerts_router
 from app.api.auto_pause import router as auto_pause_router
 
 app.include_router(query_router)
@@ -170,4 +171,5 @@ app.include_router(projects_router)
 app.include_router(request_queue_router)
 app.include_router(agent_pool_router)
 app.include_router(quota_router)
+app.include_router(quota_alerts_router)
 app.include_router(auto_pause_router)

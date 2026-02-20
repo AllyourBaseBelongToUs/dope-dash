@@ -12,6 +12,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import ForeignKey, JSON, Text, Enum as SQLEnum, Integer, Float, DateTime, Boolean
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 import enum
 
@@ -43,9 +44,9 @@ class QuotaResetType(str, enum.Enum):
 class QuotaAlertType(str, enum.Enum):
     """Quota alert severity levels."""
 
-    WARNING = "warning"
-    CRITICAL = "critical"
-    OVERAGE = "overage"
+    WARNING = "warning"  # 80% threshold
+    CRITICAL = "critical"  # 90% threshold
+    OVERAGE = "overage"  # 95%+ threshold (emergency)
 
 
 class QuotaAlertStatus(str, enum.Enum):
@@ -54,6 +55,15 @@ class QuotaAlertStatus(str, enum.Enum):
     ACTIVE = "active"
     ACKNOWLEDGED = "acknowledged"
     RESOLVED = "resolved"
+
+
+class AlertChannel(str, enum.Enum):
+    """Alert delivery channels."""
+
+    DASHBOARD = "dashboard"
+    DESKTOP = "desktop"
+    AUDIO = "audio"
+    EMAIL = "email"
 
 
 class QueuePriority(str, enum.Enum):
@@ -282,6 +292,11 @@ class QuotaUsage(Base, TimestampMixin):
         JSON,
         nullable=False,
         default=dict,
+    )
+    last_alert_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+        comment="When the last alert was sent for this usage",
     )
 
     # Relationships
@@ -623,6 +638,24 @@ class QuotaAlert(Base, TimestampMixin):
         nullable=False,
         default=dict,
     )
+    # New fields for multi-channel alerting and escalation
+    alert_channels: Mapped[list[str]] = mapped_column(
+        postgresql.ARRAY(Text),
+        nullable=False,
+        default=list,
+        comment="Channels the alert was sent to (dashboard, desktop, audio)",
+    )
+    escalation_count: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        default=0,
+        comment="Number of times alert has been escalated",
+    )
+    escalation_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+        comment="When the last escalation occurred",
+    )
 
     # Relationships
     quota_usage: Mapped["QuotaUsage"] = relationship(
@@ -640,6 +673,16 @@ class QuotaAlert(Base, TimestampMixin):
         """Mark alert as resolved."""
         self.status = QuotaAlertStatus.RESOLVED
         self.resolved_at = datetime.now(timezone.utc)
+
+    def escalate(self) -> None:
+        """Escalate the alert (increment count and update timestamp)."""
+        self.escalation_count += 1
+        self.escalation_at = datetime.now(timezone.utc)
+
+    def add_channel(self, channel: str) -> None:
+        """Add a channel that the alert was sent to."""
+        if channel not in self.alert_channels:
+            self.alert_channels = [*self.alert_channels, channel]
 
 
 # Add alerts relationship to QuotaUsage
@@ -673,6 +716,139 @@ Session.queued_requests = relationship(
     back_populates="session",
     cascade="all, delete-orphan",
 )
+
+
+class AlertConfig(Base, TimestampMixin):
+    """Alert configuration for per-provider alert settings.
+
+    Stores alert thresholds, channels, cooldown, and escalation settings.
+    Can be global (null provider/project) or specific to a provider/project.
+
+    Attributes:
+        id: Unique config identifier (UUID).
+        provider_id: Provider ID (null for global settings).
+        project_id: Project ID (null for global settings).
+        warning_threshold: Warning threshold percentage (default 80%).
+        critical_threshold: Critical threshold percentage (default 90%).
+        emergency_threshold: Emergency threshold percentage (default 95%).
+        channels: Enabled alert channels (dashboard, desktop, audio).
+        dashboard_enabled: Show in-dashboard alerts.
+        desktop_enabled: Send desktop notifications.
+        audio_enabled: Play audio alerts at emergency threshold.
+        cooldown_minutes: Minutes between alerts for same threshold.
+        escalation_enabled: Enable alert escalation.
+        escalation_minutes: Minutes before escalating unacknowledged alert.
+        max_escalations: Maximum number of escalations.
+        is_active: Whether this config is active.
+        metadata: Additional configuration (JSON).
+    """
+
+    __tablename__ = "alert_config"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        primary_key=True,
+        default=uuid.uuid4,
+    )
+    provider_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("providers.id", ondelete="CASCADE"),
+        nullable=True,
+        index=True,
+        comment="Provider ID (null for global settings)",
+    )
+    project_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("projects.id", ondelete="CASCADE"),
+        nullable=True,
+        index=True,
+        comment="Project ID (null for global settings)",
+    )
+    warning_threshold: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        default=80,
+        comment="Warning threshold percentage",
+    )
+    critical_threshold: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        default=90,
+        comment="Critical threshold percentage",
+    )
+    emergency_threshold: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        default=95,
+        comment="Emergency threshold percentage",
+    )
+    channels: Mapped[list[str]] = mapped_column(
+        ARRAY(Text),
+        nullable=False,
+        default=list,
+        comment="Enabled alert channels",
+    )
+    dashboard_enabled: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=True,
+        comment="Show in-dashboard alerts",
+    )
+    desktop_enabled: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=True,
+        comment="Send desktop notifications",
+    )
+    audio_enabled: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=True,
+        comment="Play audio alerts at emergency threshold",
+    )
+    cooldown_minutes: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        default=30,
+        comment="Minutes between alerts for same threshold",
+    )
+    escalation_enabled: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=True,
+        comment="Enable alert escalation",
+    )
+    escalation_minutes: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        default=15,
+        comment="Minutes before escalating unacknowledged alert",
+    )
+    max_escalations: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        default=3,
+        comment="Maximum number of escalations",
+    )
+    is_active: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=True,
+        index=True,
+    )
+    meta_data: Mapped[dict[str, Any]] = mapped_column(
+        "metadata",
+        JSON,
+        nullable=False,
+        default=dict,
+    )
+
+    # Relationships
+    provider: Mapped["Provider | None"] = relationship(
+        "Provider",
+        foreign_keys=[provider_id],
+    )
+    project: Mapped["Project | None"] = relationship(
+        "Project",
+        foreign_keys=[project_id],
+    )
 
 
 # ================================================================
@@ -843,6 +1019,80 @@ class QuotaAlertResponse(BaseModel):
     meta_data: dict[str, Any]
     created_at: datetime
     updated_at: datetime
+    # New fields for multi-channel alerting and escalation
+    alert_channels: list[str] = []
+    escalation_count: int = 0
+    escalation_at: datetime | None = None
+
+
+class AlertConfigCreate(BaseModel):
+    """Schema for creating alert configuration."""
+
+    provider_id: uuid.UUID | None = None
+    project_id: uuid.UUID | None = None
+    warning_threshold: int = 80
+    critical_threshold: int = 90
+    emergency_threshold: int = 95
+    channels: list[str] = ["dashboard", "desktop", "audio"]
+    dashboard_enabled: bool = True
+    desktop_enabled: bool = True
+    audio_enabled: bool = True
+    cooldown_minutes: int = 30
+    escalation_enabled: bool = True
+    escalation_minutes: int = 15
+    max_escalations: int = 3
+    is_active: bool = True
+    metadata: dict[str, Any] = {}
+
+
+class AlertConfigUpdate(BaseModel):
+    """Schema for updating alert configuration."""
+
+    warning_threshold: int | None = None
+    critical_threshold: int | None = None
+    emergency_threshold: int | None = None
+    channels: list[str] | None = None
+    dashboard_enabled: bool | None = None
+    desktop_enabled: bool | None = None
+    audio_enabled: bool | None = None
+    cooldown_minutes: int | None = None
+    escalation_enabled: bool | None = None
+    escalation_minutes: int | None = None
+    max_escalations: int | None = None
+    is_active: bool | None = None
+    metadata: dict[str, Any] | None = None
+
+
+class AlertConfigResponse(BaseModel):
+    """Schema for AlertConfig response."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    provider_id: uuid.UUID | None
+    project_id: uuid.UUID | None
+    warning_threshold: int
+    critical_threshold: int
+    emergency_threshold: int
+    channels: list[str]
+    dashboard_enabled: bool
+    desktop_enabled: bool
+    audio_enabled: bool
+    cooldown_minutes: int
+    escalation_enabled: bool
+    escalation_minutes: int
+    max_escalations: int
+    is_active: bool
+    meta_data: dict[str, Any]
+    created_at: datetime
+    updated_at: datetime
+
+
+class AlertConfigListResponse(BaseModel):
+    """Schema for alert config list response."""
+
+    items: list[AlertConfigResponse]
+    total: int
 
 
 class QuotaSummaryResponse(BaseModel):
@@ -890,12 +1140,14 @@ __all__ = [
     "QuotaResetType",
     "QuotaAlertType",
     "QuotaAlertStatus",
+    "AlertChannel",
     "QueuePriority",
     "QueueStatus",
     # Models
     "Provider",
     "QuotaUsage",
     "QuotaAlert",
+    "AlertConfig",
     "RequestQueue",
     # Schemas
     "ProviderCreate",
@@ -906,6 +1158,10 @@ __all__ = [
     "QuotaAlertResponse",
     "QuotaAlertListResponse",
     "QuotaSummaryResponse",
+    "AlertConfigCreate",
+    "AlertConfigUpdate",
+    "AlertConfigResponse",
+    "AlertConfigListResponse",
     "RequestQueueCreate",
     "RequestQueueResponse",
     "QueueStatsResponse",

@@ -20,7 +20,7 @@ export type EventType =
   | 'subtask_complete';
 
 export interface WebSocketMessage {
-  type: 'event' | 'ping' | 'pong' | 'error' | 'info' | 'quota_update' | 'quota_alert' | 'rate_limit_update' | 'rate_limit_detected' | 'rate_limit_resolved' | 'rate_limit_failed';
+  type: 'event' | 'ping' | 'pong' | 'error' | 'info' | 'quota_update' | 'quota_alert' | 'rate_limit_update' | 'rate_limit_detected' | 'rate_limit_resolved' | 'rate_limit_failed' | 'desktop_notification' | 'audio_alert' | 'alert_acknowledged';
   id?: string;
   session_id?: string;
   event_type?: EventType;
@@ -486,6 +486,11 @@ export interface QuotaAlert {
   resolved_at: string | null;
   updated_at: string;
   metadata: Record<string, unknown>;
+  // New fields for multi-channel alerting and escalation
+  alert_channels?: string[];
+  escalation_count?: number;
+  escalation_at?: string | null;
+  is_escalation?: boolean;
 }
 
 export interface QuotaSummary {
