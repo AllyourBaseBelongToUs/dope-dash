@@ -548,6 +548,109 @@ class RequestQueue(Base, TimestampMixin):
         self.status = QueueStatus.PENDING
 
 
+class QuotaAlert(Base, TimestampMixin):
+    """Quota alert for overage notifications.
+
+    Attributes:
+        id: Unique alert identifier (UUID).
+        quota_usage_id: Associated quota usage record.
+        alert_type: Alert severity (warning, critical, overage).
+        status: Alert status (active, acknowledged, resolved).
+        threshold_percent: Threshold that triggered the alert.
+        current_usage: Usage value when alert triggered.
+        quota_limit: Quota limit at time of alert.
+        message: Alert message.
+        acknowledged_by: User who acknowledged the alert.
+        acknowledged_at: When alert was acknowledged.
+        resolved_at: When alert was resolved.
+        metadata: Additional alert metadata (JSON).
+    """
+
+    __tablename__ = "quota_alerts"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        primary_key=True,
+        default=uuid.uuid4,
+    )
+    quota_usage_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("quota_usage.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    alert_type: Mapped[QuotaAlertType] = mapped_column(
+        SQLEnum(QuotaAlertType, native_enum=False),
+        nullable=False,
+        index=True,
+    )
+    status: Mapped[QuotaAlertStatus] = mapped_column(
+        SQLEnum(QuotaAlertStatus, native_enum=False),
+        nullable=False,
+        default=QuotaAlertStatus.ACTIVE,
+        index=True,
+    )
+    threshold_percent: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        comment="Threshold that triggered the alert",
+    )
+    current_usage: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+    )
+    quota_limit: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+    )
+    message: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+    )
+    acknowledged_by: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+    acknowledged_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    resolved_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    meta_data: Mapped[dict[str, Any]] = mapped_column(
+        "metadata",
+        JSON,
+        nullable=False,
+        default=dict,
+    )
+
+    # Relationships
+    quota_usage: Mapped["QuotaUsage"] = relationship(
+        "QuotaUsage",
+        back_populates="alerts",
+    )
+
+    def acknowledge(self, acknowledged_by: str | None = None) -> None:
+        """Mark alert as acknowledged."""
+        self.status = QuotaAlertStatus.ACKNOWLEDGED
+        self.acknowledged_by = acknowledged_by
+        self.acknowledged_at = datetime.now(timezone.utc)
+
+    def resolve(self) -> None:
+        """Mark alert as resolved."""
+        self.status = QuotaAlertStatus.RESOLVED
+        self.resolved_at = datetime.now(timezone.utc)
+
+
+# Add alerts relationship to QuotaUsage
+QuotaUsage.alerts = relationship(
+    "QuotaAlert",
+    back_populates="quota_usage",
+    cascade="all, delete-orphan",
+    order_by="desc(QuotaAlert.created_at)",
+)
+
+
 # Import Project and Session for relationships (avoid circular import)
 # These are imported at runtime to resolve forward references
 from app.models.project import Project
@@ -618,6 +721,10 @@ class ProviderResponse(BaseModel):
     meta_data: dict[str, Any]
     created_at: datetime
     updated_at: datetime
+    # Additional fields for frontend compatibility
+    models: list[str] = []
+    enabled: bool = True  # Alias for is_active
+    priority: int = 0
 
 
 class QuotaUsageResponse(BaseModel):
@@ -627,6 +734,7 @@ class QuotaUsageResponse(BaseModel):
 
     id: uuid.UUID
     provider_id: uuid.UUID
+    provider_name: str | None = None
     project_id: uuid.UUID | None
     current_requests: int
     current_tokens: int
@@ -644,6 +752,8 @@ class QuotaUsageResponse(BaseModel):
     usage_percent: float
     is_over_limit: bool
     remaining_quota: int
+    remaining_requests: int = 0  # Alias for remaining_quota for frontend compatibility
+    time_until_reset_seconds: int | None = None
 
 
 class RequestQueueCreate(BaseModel):
@@ -712,6 +822,64 @@ class QueueStatsResponse(BaseModel):
     timestamp: datetime
 
 
+class QuotaAlertResponse(BaseModel):
+    """Schema for QuotaAlert response."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    quota_usage_id: uuid.UUID
+    provider_id: uuid.UUID | None = None
+    provider_name: str | None = None
+    alert_type: QuotaAlertType
+    status: QuotaAlertStatus
+    threshold_percent: int
+    current_usage: int
+    quota_limit: int
+    message: str
+    acknowledged_by: str | None
+    acknowledged_at: datetime | None
+    resolved_at: datetime | None
+    meta_data: dict[str, Any]
+    created_at: datetime
+    updated_at: datetime
+
+
+class QuotaSummaryResponse(BaseModel):
+    """Schema for quota summary response."""
+
+    total_providers: int
+    active_providers: int
+    total_requests: int
+    total_tokens: int
+    total_usage_percent: float
+    alerts_count: int
+    alerts_critical: int
+    providers_over_limit: int
+    last_updated: datetime
+
+
+class ProviderListResponse(BaseModel):
+    """Schema for provider list response."""
+
+    items: list[ProviderResponse]
+    total: int
+
+
+class QuotaUsageListResponse(BaseModel):
+    """Schema for quota usage list response."""
+
+    items: list[QuotaUsageResponse]
+    total: int
+
+
+class QuotaAlertListResponse(BaseModel):
+    """Schema for quota alert list response."""
+
+    items: list[QuotaAlertResponse]
+    total: int
+
+
 # ================================================================
 # EXPORTS
 # ================================================================
@@ -727,11 +895,17 @@ __all__ = [
     # Models
     "Provider",
     "QuotaUsage",
+    "QuotaAlert",
     "RequestQueue",
     # Schemas
     "ProviderCreate",
     "ProviderResponse",
+    "ProviderListResponse",
     "QuotaUsageResponse",
+    "QuotaUsageListResponse",
+    "QuotaAlertResponse",
+    "QuotaAlertListResponse",
+    "QuotaSummaryResponse",
     "RequestQueueCreate",
     "RequestQueueResponse",
     "QueueStatsResponse",
