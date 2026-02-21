@@ -69,6 +69,8 @@ interface PortfolioState {
   stopProject: (projectId: string) => Promise<{ message: string; agentsAffected: number }>;
   retryProject: (projectId: string) => Promise<{ message: string; agentsAffected: number }>;
   restartProject: (projectId: string) => Promise<{ message: string; agentsAffected: number }>;
+  queueProject: (projectId: string) => Promise<{ message: string; agentsAffected: number }>;
+  cancelProject: (projectId: string) => Promise<{ message: string; agentsAffected: number }>;
   fetchProjectControls: (projectId: string, limit?: number) => Promise<ProjectControlHistoryEntry[]>;
 
   // Bulk Selection Actions
@@ -455,6 +457,48 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : 'Failed to restart project',
+        isLoading: false,
+      });
+      throw error;
+    }
+  },
+
+  queueProject: async (projectId: string) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const service = getPortfolioService();
+      const result = await service.queueProject(projectId);
+
+      // Refresh project data
+      await get().fetchProject(projectId);
+
+      set({ isLoading: false });
+      return { message: result.message, agentsAffected: result.agents_affected };
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'Failed to queue project',
+        isLoading: false,
+      });
+      throw error;
+    }
+  },
+
+  cancelProject: async (projectId: string) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const service = getPortfolioService();
+      const result = await service.cancelProject(projectId);
+
+      // Refresh project data
+      await get().fetchProject(projectId);
+
+      set({ isLoading: false });
+      return { message: result.message, agentsAffected: result.agents_affected };
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'Failed to cancel project',
         isLoading: false,
       });
       throw error;

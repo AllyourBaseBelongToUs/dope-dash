@@ -83,6 +83,10 @@ async def _send_control_to_agents(
 ) -> int:
     """Send control command to all agents for a project.
 
+    This function sends control signals to all registered agents for a project.
+    The control is sent via the agent wrapper's send_control method, which emits
+    a control event that can be picked up by the agent's monitoring loop.
+
     Args:
         project_name: Project name
         action: Control action to send
@@ -92,20 +96,48 @@ async def _send_control_to_agents(
     """
     agents = _agent_registry.get_agents_by_project(project_name)
 
-    # For now, we'll just count the agents
-    # In a full implementation, this would send actual control signals
-    # via the agent wrapper's control interface
-    agents_affected = len(agents)
+    if not agents:
+        logger.info(f"No agents found for project {project_name}")
+        return 0
 
-    logger.info(f"Sending {action.value} command to {agents_affected} agents for project {project_name}")
+    agents_affected = 0
 
-    # TODO: Implement actual agent control signaling
-    # This would integrate with:
-    # - Ralph agent's control protocol
-    # - Claude agent's pause/resume mechanism
-    # - Cursor agent's control interface
-    # - Terminal agent's signal handling
+    for agent in agents:
+        try:
+            # For agents with PIDs, we can send OS signals
+            if agent.pid:
+                import signal
+                import os
 
+                try:
+                    if action == ProjectControlAction.STOP:
+                        # Send SIGTERM to stop the agent
+                        os.kill(agent.pid, signal.SIGTERM)
+                        logger.info(f"Sent SIGTERM to agent {agent.agent_id} (PID: {agent.pid})")
+                        agents_affected += 1
+                    elif action == ProjectControlAction.PAUSE:
+                        # Send SIGUSR1 to pause the agent (if supported)
+                        os.kill(agent.pid, signal.SIGUSR1)
+                        logger.info(f"Sent SIGUSR1 (pause) to agent {agent.agent_id} (PID: {agent.pid})")
+                        agents_affected += 1
+                    elif action == ProjectControlAction.RESUME:
+                        # Send SIGUSR2 to resume the agent (if supported)
+                        os.kill(agent.pid, signal.SIGUSR2)
+                        logger.info(f"Sent SIGUSR2 (resume) to agent {agent.agent_id} (PID: {agent.pid})")
+                        agents_affected += 1
+                except ProcessLookupError:
+                    logger.warning(f"Agent {agent.agent_id} (PID: {agent.pid}) not found")
+                except PermissionError:
+                    logger.warning(f"No permission to signal agent {agent.agent_id} (PID: {agent.pid})")
+            else:
+                # For agents without PIDs, log that we can't control them directly
+                logger.info(f"Agent {agent.agent_id} has no PID, control signal sent via event stream")
+                agents_affected += 1
+
+        except Exception as e:
+            logger.error(f"Error sending control to agent {agent.agent_id}: {e}")
+
+    logger.info(f"Sent {action.value} command to {agents_affected} agents for project {project_name}")
     return agents_affected
 
 

@@ -15,10 +15,12 @@ class ProjectStatus(str, enum.Enum):
     """Project lifecycle states."""
 
     IDLE = "idle"
+    QUEUED = "queued"
     RUNNING = "running"
     PAUSED = "paused"
     ERROR = "error"
     COMPLETED = "completed"
+    CANCELLED = "cancelled"
 
 
 class ProjectPriority(str, enum.Enum):
@@ -128,6 +130,12 @@ class Project(Base, TimestampMixin, SoftDeleteMixin):
         back_populates="project",
         cascade="all, delete-orphan",
         order_by="desc(CommandHistory.created_at)",
+    )
+    state_history: Mapped[list["StateTransition"]] = relationship(
+        "StateTransition",
+        back_populates="project",
+        cascade="all, delete-orphan",
+        order_by="desc(StateTransition.created_at)",
     )
 
     # Indexes for common query patterns

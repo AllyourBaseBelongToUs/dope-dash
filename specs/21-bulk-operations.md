@@ -1,6 +1,6 @@
 # Spec: Bulk Operations
 
-## Status: 🟡 TODO (Phase 5)
+## Status: ✅ COMPLETED
 
 ## Objective
 Multi-select and bulk actions (pause/resume/stop multiple projects)

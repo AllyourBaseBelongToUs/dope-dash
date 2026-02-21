@@ -13,31 +13,36 @@ import {
   XCircle,
   Loader2,
   AlertTriangle,
+  ListOrdered,
 } from 'lucide-react';
 import { usePortfolioStore } from '@/store/portfolioStore';
-import type { ProjectControlHistoryEntry } from '@/types';
+import type { ProjectControlHistoryEntry, ProjectControlAction } from '@/types';
 import { formatDistanceToNow } from 'date-fns';
 
 interface ProjectControlHistoryProps {
   projectId: string;
 }
 
-const controlIcons = {
+const controlIcons: Record<ProjectControlAction, React.ComponentType<{ className?: string }>> = {
   pause: Pause,
   resume: Play,
   skip: SkipForward,
   stop: Square,
   retry: RotateCcw,
   restart: RotateCw,
+  queue: ListOrdered,
+  cancel: XCircle,
 };
 
-const controlLabels = {
+const controlLabels: Record<ProjectControlAction, string> = {
   pause: 'Paused',
   resume: 'Resumed',
   skip: 'Skipped',
   stop: 'Stopped',
   retry: 'Retried',
   restart: 'Restarted',
+  queue: 'Queued',
+  cancel: 'Cancelled',
 };
 
 const statusConfig = {

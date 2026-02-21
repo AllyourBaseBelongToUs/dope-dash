@@ -34,6 +34,8 @@ from pathlib import Path as PathLib
 sys.path.insert(0, str(PathLib(__file__).parent.parent))
 
 from app.core.config import settings
+from app.db import get_db_session
+from sqlalchemy import select
 
 
 logger = logging.getLogger(__name__)

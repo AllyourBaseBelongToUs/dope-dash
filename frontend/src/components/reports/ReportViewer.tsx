@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Report, ReportFormat } from '@/types/reports';
 import { Download, Maximize2, FileText, FileJson } from 'lucide-react';
-import { SessionDurationChart, EventBreakdownChart, TrendChart, ComparisonChart } from './charts';
+import { SessionDurationChart, EventBreakdownChart, TrendChart, ComparisonChart } from './Charts';
 
 interface ReportViewerProps {
   report: Report;

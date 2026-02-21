@@ -59,6 +59,27 @@ class BaseAgentWrapper(ABC):
         """Check if the wrapper is running."""
         return self._running
 
+    async def send_control(
+        self,
+        control: str,
+        metadata: dict[str, Any] | None = None,
+    ) -> bool:
+        """Send a control command to the agent.
+
+        This method can be overridden by wrapper implementations to handle
+        control commands like pause, resume, stop, skip, retry, restart.
+
+        Args:
+            control: Control command (pause, resume, stop, skip, retry, restart)
+            metadata: Optional metadata for the control command
+
+        Returns:
+            True if control was sent successfully, False otherwise
+        """
+        # Default implementation does nothing
+        # Subclasses can override to implement actual control handling
+        return False
+
 
 class AgentFactory:
     """Factory for creating agent wrapper instances.

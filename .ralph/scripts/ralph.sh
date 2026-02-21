@@ -202,7 +202,7 @@ Before DONE: run 'npm run build' and verify it passes."
         fi
 
         if echo "$output" | grep -q "$COMPLETION_MARKER"; then
-            heartbeat_running  # Agent execution complete, now verifying
+            heartbeat_running  # Claude execution complete, now verifying
             if verify_build; then
                 heartbeat_testing  # Starting E2E tests
                 # Run E2E tests if available
@@ -293,8 +293,8 @@ main() {
     local total_specs=$(ls -1 specs/*.md 2>/dev/null | grep -v "/CR-" | wc -l | tr -d ' ')
 
     if [ "$total_specs" -eq 0 ]; then
-        log "${RED}No specs found in specs/*.md${NC}"
-        notify "❌ No specs found"
+        log "${RED}Inga specs hittades i specs/*.md${NC}"
+        notify "❌ Inga specs hittades"
         exit 1
     fi
 

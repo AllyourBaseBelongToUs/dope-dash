@@ -32,7 +32,7 @@ import {
   EventBreakdownChart,
   TrendChart,
   ComparisonChart,
-} from '@/components/reports/charts';
+} from '@/components/reports/Charts';
 import { reportService } from '@/services/reportService';
 import { reportScheduleService } from '@/services/reportScheduleService';
 import { format } from 'date-fns';

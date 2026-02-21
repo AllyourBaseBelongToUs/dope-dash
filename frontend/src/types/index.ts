@@ -20,7 +20,7 @@ export type EventType =
   | 'subtask_complete';
 
 export interface WebSocketMessage {
-  type: 'event' | 'ping' | 'pong' | 'error' | 'info' | 'quota_update' | 'quota_alert' | 'rate_limit_update' | 'rate_limit_detected' | 'rate_limit_resolved' | 'rate_limit_failed';
+  type: 'event' | 'ping' | 'pong' | 'error' | 'info' | 'quota_update' | 'quota_alert' | 'rate_limit_update' | 'rate_limit_detected' | 'rate_limit_resolved' | 'rate_limit_failed' | 'desktop_notification' | 'audio_alert' | 'alert_acknowledged';
   id?: string;
   session_id?: string;
   event_type?: EventType;
@@ -291,11 +291,27 @@ export interface ReportScheduleConfig {
 }
 
 // Portfolio/Project types
-export type ProjectStatus = 'idle' | 'running' | 'paused' | 'error' | 'completed';
+export type ProjectStatus = 'idle' | 'queued' | 'running' | 'paused' | 'error' | 'completed' | 'cancelled';
 export type ProjectPriority = 'low' | 'medium' | 'high' | 'critical';
 
-export type ProjectControlAction = 'pause' | 'resume' | 'skip' | 'stop' | 'retry' | 'restart';
+export type ProjectControlAction = 'pause' | 'resume' | 'skip' | 'stop' | 'retry' | 'restart' | 'cancel' | 'queue';
 export type ProjectControlStatus = 'pending' | 'acknowledged' | 'completed' | 'failed' | 'timeout';
+
+// State transition types
+export type StateTransitionSource = 'user' | 'system' | 'api' | 'automation' | 'timeout';
+
+export interface StateTransition {
+  id: string;
+  projectId: string;
+  fromState: ProjectStatus | null;
+  toState: ProjectStatus;
+  transitionReason?: string;
+  source: StateTransitionSource;
+  initiatedBy: string;
+  metadata: Record<string, unknown>;
+  durationMs?: number;
+  createdAt: string;
+}
 
 export interface ProjectControlHistoryEntry {
   id: string;
@@ -470,6 +486,11 @@ export interface QuotaAlert {
   resolved_at: string | null;
   updated_at: string;
   metadata: Record<string, unknown>;
+  // New fields for multi-channel alerting and escalation
+  alert_channels?: string[];
+  escalation_count?: number;
+  escalation_at?: string | null;
+  is_escalation?: boolean;
 }
 
 export interface QuotaSummary {
@@ -532,4 +553,213 @@ export interface RateLimitEventSummary {
   total_retries: number;
   avg_resolution_time_ms: number;
   last_updated: string;
+}
+
+// Agent Pool types
+export type PoolAgentStatus = 'available' | 'busy' | 'offline' | 'maintenance' | 'draining';
+export type ScalingAction = 'scale_up' | 'scale_down' | 'no_op';
+
+export interface AgentPoolAgent {
+  id: string;
+  agentId: string;
+  agentType: AgentType;
+  status: PoolAgentStatus;
+  currentProjectId: string | null;
+  currentLoad: number;
+  maxCapacity: number;
+  capabilities: string[];
+  metadata: Record<string, unknown>;
+  pid: number | null;
+  workingDir: string | null;
+  command: string | null;
+  tmuxSession: string | null;
+  lastHeartbeat: string | null;
+  totalAssigned: number;
+  totalCompleted: number;
+  totalFailed: number;
+  averageTaskDurationMs: number | null;
+  affinityTag: string | null;
+  priority: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  utilizationPercent: number;
+  completionRate: number;
+  isAvailable: boolean;
+}
+
+export interface AgentPoolListResponse {
+  agents: AgentPoolAgent[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface PoolMetrics {
+  totalAgents: number;
+  availableAgents: number;
+  busyAgents: number;
+  offlineAgents: number;
+  maintenanceAgents: number;
+  drainingAgents: number;
+  totalCapacity: number;
+  usedCapacity: number;
+  availableCapacity: number;
+  utilizationPercent: number;
+  averageCompletionRate: number;
+  agentsByType: Record<string, number>;
+}
+
+export interface PoolHealthReport {
+  healthy: boolean;
+  metrics: PoolMetrics;
+  issues: string[];
+  recommendations: string[];
+  staleAgents: AgentPoolAgent[];
+  overloadedAgents: AgentPoolAgent[];
+}
+
+export interface ScalingRecommendation {
+  action: ScalingAction;
+  currentCount: number;
+  recommendedCount: number;
+  delta: number;
+  reason: string;
+  metrics: PoolMetrics;
+}
+
+export interface ScalingPolicy {
+  minAgents: number;
+  maxAgents: number;
+  scaleUpThreshold: number;
+  scaleDownThreshold: number;
+  scaleUpCooldownMinutes: number;
+  scaleDownCooldownMinutes: number;
+  staleAgentTimeoutMinutes: number;
+  enableAutoScaling: boolean;
+}
+
+export interface ScalingEvent {
+  id: string;
+  action: ScalingAction;
+  previousCount: number;
+  newCount: number;
+  reason: string;
+  metadata: {
+    metrics?: PoolMetrics;
+    policy?: ScalingPolicy;
+  };
+  createdAt: string;
+}
+
+export interface AgentAssignRequest {
+  projectId: string;
+  agentType?: AgentType;
+  capabilities: string[];
+  affinityTag?: string;
+  preferredAgentId?: string;
+}
+
+export interface AgentAssignResponse {
+  success: boolean;
+  agent: AgentPoolAgent | null;
+  message: string | null;
+}
+
+export interface AgentHeartbeatRequest {
+  agentId: string;
+  currentLoad?: number;
+  currentProjectId?: string;
+  metadata: Record<string, unknown>;
+}
+
+export interface AgentPoolCreateRequest {
+  agentId: string;
+  agentType: AgentType;
+  status?: PoolAgentStatus;
+  currentProjectId?: string;
+  currentLoad?: number;
+  maxCapacity?: number;
+  capabilities?: string[];
+  metadata?: Record<string, unknown>;
+  pid?: number;
+  workingDir?: string;
+  command?: string;
+  tmuxSession?: string;
+  lastHeartbeat?: string;
+  totalAssigned?: number;
+  totalCompleted?: number;
+  totalFailed?: number;
+  averageTaskDurationMs?: number;
+  affinityTag?: string;
+  priority?: number;
+}
+
+export interface AgentPoolUpdateRequest {
+  status?: PoolAgentStatus;
+  currentProjectId?: string;
+  currentLoad?: number;
+  maxCapacity?: number;
+  capabilities?: string[];
+  metadata?: Record<string, unknown>;
+  pid?: number;
+  workingDir?: string;
+  command?: string;
+  tmuxSession?: string;
+  lastHeartbeat?: string;
+  totalAssigned?: number;
+  totalCompleted?: number;
+  totalFailed?: number;
+  averageTaskDurationMs?: number;
+  affinityTag?: string;
+  priority?: number;
+}
+
+// Auto-pause types
+export type AutoPauseTrigger = 'quota_threshold' | 'quota_exceeded' | 'manual_override';
+export type AutoPauseStatus = 'pending' | 'paused' | 'resumed' | 'overridden' | 'cancelled';
+
+export interface AutoPauseSettings {
+  enabled: boolean;
+  threshold_percent: number;
+  auto_resume: boolean;
+  warning_threshold: number;
+}
+
+export interface AutoPauseLogEntry {
+  id: string;
+  project_id: string;
+  trigger: AutoPauseTrigger;
+  status: AutoPauseStatus;
+  threshold_percent: number;
+  priority_at_pause: string;
+  paused_at: string | null;
+  resumed_at: string | null;
+  override_by: string | null;
+  override_at: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AutoPauseLogListResponse {
+  items: AutoPauseLogEntry[];
+  total: number;
+}
+
+export interface AutoPauseStatusResponse {
+  enabled: boolean;
+  current_threshold: number;
+  warning_threshold: number;
+  auto_resume_enabled: boolean;
+  last_pause_at: string | null;
+  last_resume_at: string | null;
+  total_pauses: number;
+  total_resumes: number;
+}
+
+export interface AutoPauseSettingsResponse {
+  project_id: string;
+  project_name: string;
+  settings: AutoPauseSettings;
 }
