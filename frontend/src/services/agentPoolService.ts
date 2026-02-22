@@ -30,6 +30,69 @@ class AgentPoolService {
   }
 
   /**
+   * Get CSRF token from meta tag or cookie
+   */
+  private getCsrfToken(): string | null {
+    if (typeof document === 'undefined') return null;
+
+    // Try meta tag first
+    const metaTag = document.querySelector('meta[name="csrf-token"]');
+    if (metaTag) {
+      return metaTag.getAttribute('content');
+    }
+
+    // Try cookie
+    const cookies = document.cookie.split(';');
+    for (const cookie of cookies) {
+      const [name, value] = cookie.trim().split('=');
+      if (name === 'csrf_token' || name === 'XSRF-TOKEN') {
+        return decodeURIComponent(value);
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Get default headers for fetch requests
+   */
+  private getHeaders(includeCsrf: boolean = false): HeadersInit {
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    if (includeCsrf) {
+      const csrfToken = this.getCsrfToken();
+      if (csrfToken) {
+        headers['X-CSRF-Token'] = csrfToken;
+      }
+    }
+
+    return headers;
+  }
+
+  /**
+   * Make a fetch request with proper credentials and CSRF protection
+   */
+  private async fetchWithCsrf(
+    url: string,
+    options: RequestInit = {}
+  ): Promise<Response> {
+    const includeCsrf = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(
+      (options.method || 'GET').toUpperCase()
+    );
+
+    return fetch(url, {
+      ...options,
+      headers: {
+        ...this.getHeaders(includeCsrf),
+        ...options.headers,
+      },
+      credentials: 'include', // Include cookies for session management
+    });
+  }
+
+  /**
    * Get the API base URL from environment store or fallback
    */
   private getApiBaseUrl(): string {
@@ -164,7 +227,7 @@ class AgentPoolService {
     if (params?.offset) queryParams.append('offset', params.offset.toString());
 
     const url = `${this.baseUrl}/api/agent-pool${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
-    const response = await fetch(url);
+    const response = await this.fetchWithCsrf(url);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch agents: ${response.statusText}`);
@@ -184,7 +247,7 @@ class AgentPoolService {
    */
   async registerAgent(data: AgentPoolCreateRequest): Promise<AgentPoolAgent> {
     const url = `${this.baseUrl}/api/agent-pool`;
-    const response = await fetch(url, {
+    const response = await this.fetchWithCsrf(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(this.transformCreateRequest(data)),
@@ -204,7 +267,7 @@ class AgentPoolService {
    */
   async getAgent(poolId: string): Promise<AgentPoolAgent | null> {
     const url = `${this.baseUrl}/api/agent-pool/${poolId}`;
-    const response = await fetch(url);
+    const response = await this.fetchWithCsrf(url);
 
     if (response.status === 404) return null;
     if (!response.ok) {
@@ -220,7 +283,7 @@ class AgentPoolService {
    */
   async getAgentByAgentId(agentId: string): Promise<AgentPoolAgent | null> {
     const url = `${this.baseUrl}/api/agent-pool/agent-id/${agentId}`;
-    const response = await fetch(url);
+    const response = await this.fetchWithCsrf(url);
 
     if (response.status === 404) return null;
     if (!response.ok) {
@@ -236,7 +299,7 @@ class AgentPoolService {
    */
   async updateAgent(poolId: string, data: AgentPoolUpdateRequest): Promise<AgentPoolAgent | null> {
     const url = `${this.baseUrl}/api/agent-pool/${poolId}`;
-    const response = await fetch(url, {
+    const response = await this.fetchWithCsrf(url, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(this.transformUpdateRequest(data)),
@@ -256,7 +319,7 @@ class AgentPoolService {
    */
   async unregisterAgent(poolId: string): Promise<boolean> {
     const url = `${this.baseUrl}/api/agent-pool/${poolId}`;
-    const response = await fetch(url, { method: 'DELETE' });
+    const response = await this.fetchWithCsrf(url, { method: 'DELETE' });
 
     if (response.status === 404) return false;
     if (!response.ok) {
@@ -275,7 +338,7 @@ class AgentPoolService {
    */
   async setAgentStatus(agentId: string, status: PoolAgentStatus): Promise<AgentPoolAgent | null> {
     const url = `${this.baseUrl}/api/agent-pool/${agentId}/status?status=${status}`;
-    const response = await fetch(url, { method: 'POST' });
+    const response = await this.fetchWithCsrf(url, { method: 'POST' });
 
     if (response.status === 404) return null;
     if (!response.ok) {
@@ -291,7 +354,7 @@ class AgentPoolService {
    */
   async updateHeartbeat(data: AgentHeartbeatRequest): Promise<AgentPoolAgent | null> {
     const url = `${this.baseUrl}/api/agent-pool/heartbeat`;
-    const response = await fetch(url, {
+    const response = await this.fetchWithCsrf(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -316,7 +379,7 @@ class AgentPoolService {
    */
   async assignAgent(request: AgentAssignRequest): Promise<AgentAssignResponse> {
     const url = `${this.baseUrl}/api/agent-pool/assign`;
-    const response = await fetch(url, {
+    const response = await this.fetchWithCsrf(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -345,7 +408,7 @@ class AgentPoolService {
    */
   async releaseAgent(agentId: string, completed: boolean = true): Promise<AgentPoolAgent | null> {
     const url = `${this.baseUrl}/api/agent-pool/${agentId}/release?completed=${completed}`;
-    const response = await fetch(url, { method: 'POST' });
+    const response = await this.fetchWithCsrf(url, { method: 'POST' });
 
     if (response.status === 404) return null;
     if (!response.ok) {
@@ -365,7 +428,7 @@ class AgentPoolService {
    */
   async getPoolMetrics(): Promise<PoolMetrics> {
     const url = `${this.baseUrl}/api/agent-pool/metrics/summary`;
-    const response = await fetch(url);
+    const response = await this.fetchWithCsrf(url);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch pool metrics: ${response.statusText}`);
@@ -379,7 +442,7 @@ class AgentPoolService {
    */
   async getHealthReport(): Promise<PoolHealthReport> {
     const url = `${this.baseUrl}/api/agent-pool/metrics/health`;
-    const response = await fetch(url);
+    const response = await this.fetchWithCsrf(url);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch health report: ${response.statusText}`);
@@ -397,6 +460,27 @@ class AgentPoolService {
   }
 
   // ============================================================================
+  // Agent Detection Methods
+  // ============================================================================
+
+  /**
+   * Trigger manual agent detection scan
+   */
+  async detectAgents(projectDir?: string): Promise<{ detected: number; agents: any[]; sync: any }> {
+    const params = projectDir ? `?project_dir=${encodeURIComponent(projectDir)}` : '';
+    const url = `${this.baseUrl}/api/agent-pool/detect${params}`;
+    const response = await this.fetchWithCsrf(url, {
+      method: 'POST',
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to trigger detection: ${response.statusText}`);
+    }
+
+    return await response.json();
+  }
+
+  // ============================================================================
   // Auto-Scaling Methods
   // ============================================================================
 
@@ -405,7 +489,7 @@ class AgentPoolService {
    */
   async getScalingRecommendation(): Promise<ScalingRecommendation> {
     const url = `${this.baseUrl}/api/agent-pool/scaling/recommendation`;
-    const response = await fetch(url);
+    const response = await this.fetchWithCsrf(url);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch scaling recommendation: ${response.statusText}`);
@@ -419,7 +503,7 @@ class AgentPoolService {
    */
   async executeScaling(): Promise<ScalingEvent> {
     const url = `${this.baseUrl}/api/agent-pool/scaling/execute`;
-    const response = await fetch(url, { method: 'POST' });
+    const response = await this.fetchWithCsrf(url, { method: 'POST' });
 
     if (!response.ok) {
       throw new Error(`Failed to execute scaling: ${response.statusText}`);
@@ -442,7 +526,7 @@ class AgentPoolService {
    */
   async getScalingHistory(limit: number = 50): Promise<ScalingEvent[]> {
     const url = `${this.baseUrl}/api/agent-pool/scaling/history?limit=${limit}`;
-    const response = await fetch(url);
+    const response = await this.fetchWithCsrf(url);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch scaling history: ${response.statusText}`);
@@ -465,7 +549,7 @@ class AgentPoolService {
    */
   async getScalingPolicy(): Promise<ScalingPolicy> {
     const url = `${this.baseUrl}/api/agent-pool/scaling/policy`;
-    const response = await fetch(url);
+    const response = await this.fetchWithCsrf(url);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch scaling policy: ${response.statusText}`);
@@ -489,7 +573,7 @@ class AgentPoolService {
    */
   async updateScalingPolicy(policy: ScalingPolicy): Promise<ScalingPolicy> {
     const url = `${this.baseUrl}/api/agent-pool/scaling/policy`;
-    const response = await fetch(url, {
+    const response = await this.fetchWithCsrf(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -526,7 +610,7 @@ class AgentPoolService {
    */
   async startMonitoring(intervalSeconds: number = 60): Promise<{ status: string; message: string }> {
     const url = `${this.baseUrl}/api/agent-pool/scaling/start?interval_seconds=${intervalSeconds}`;
-    const response = await fetch(url, { method: 'POST' });
+    const response = await this.fetchWithCsrf(url, { method: 'POST' });
 
     if (!response.ok) {
       throw new Error(`Failed to start monitoring: ${response.statusText}`);
@@ -540,7 +624,7 @@ class AgentPoolService {
    */
   async stopMonitoring(): Promise<{ status: string; message: string }> {
     const url = `${this.baseUrl}/api/agent-pool/scaling/stop`;
-    const response = await fetch(url, { method: 'POST' });
+    const response = await this.fetchWithCsrf(url, { method: 'POST' });
 
     if (!response.ok) {
       throw new Error(`Failed to stop monitoring: ${response.statusText}`);

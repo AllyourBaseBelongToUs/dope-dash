@@ -1,5 +1,8 @@
 'use client';
 
+import { useRef } from 'react';
+import { useDraggable } from '@dnd-kit/core';
+import { CSS } from '@dnd-kit/utilities';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,6 +16,7 @@ import {
   Power,
   Wrench,
   ArrowDownToLine,
+  GripVertical,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -23,6 +27,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import type { AgentPoolAgent, PoolAgentStatus } from '@/types';
 import { formatDistanceToNow } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface AgentCardProps {
   agent: AgentPoolAgent;
@@ -30,9 +35,39 @@ interface AgentCardProps {
   onEdit?: (agent: AgentPoolAgent) => void;
   onDelete?: (agent: AgentPoolAgent) => void;
   onStatusChange?: (agentId: string, status: PoolAgentStatus) => void;
+  /** Whether the card is draggable (default: true) */
+  draggable?: boolean;
 }
 
-export function AgentCard({ agent, onSelect, onEdit, onDelete, onStatusChange }: AgentCardProps) {
+export function AgentCard({ agent, onSelect, onEdit, onDelete, onStatusChange, draggable = true }: AgentCardProps) {
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  // Setup draggable
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: `agent-${agent.id}`,
+    data: {
+      type: 'agent',
+      agent,
+      agentId: agent.agentId,
+    },
+    disabled: !draggable,
+  });
+
+  // Apply transform for drag
+  const style = transform
+    ? {
+        transform: CSS.Translate.toString(transform),
+        zIndex: isDragging ? 50 : undefined,
+        opacity: isDragging ? 0.5 : 1,
+      }
+    : undefined;
+
+  // Combine refs
+  const refs = (node: HTMLDivElement) => {
+    (cardRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+    setNodeRef(node);
+  };
+
   const getStatusColor = (status: PoolAgentStatus): string => {
     switch (status) {
       case 'available':
@@ -96,22 +131,40 @@ export function AgentCard({ agent, onSelect, onEdit, onDelete, onStatusChange }:
 
   return (
     <Card
-      className={`group hover:border-primary/50 transition-all cursor-pointer ${
-        !agent.isAvailable ? 'opacity-75' : ''
-      }`}
-      onClick={() => onSelect?.(agent)}
+      ref={refs}
+      style={style}
+      className={cn(
+        'group hover:border-primary/50 transition-all cursor-pointer',
+        !agent.isAvailable && 'opacity-75',
+        isDragging && 'shadow-xl ring-2 ring-primary',
+        draggable && 'hover:shadow-md'
+      )}
+      onClick={() => !isDragging && onSelect?.(agent)}
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
-          <div className="flex-1 min-w-0">
-            <CardTitle className="text-base font-medium truncate flex items-center gap-2">
-              {agent.agentId}
-              <Badge className={`text-xs ${getAgentTypeColor(agent.agentType)}`}>
-                {agent.agentType}
-              </Badge>
-            </CardTitle>
-            <div className="text-xs text-muted-foreground mt-1">
-              Pool ID: {agent.id.slice(0, 8)}...
+          <div className="flex items-start gap-2 flex-1 min-w-0">
+            {/* Drag Handle */}
+            {draggable && (
+              <div
+                {...attributes}
+                {...listeners}
+                className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground pt-1 flex-shrink-0"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <GripVertical className="h-4 w-4" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <CardTitle className="text-base font-medium truncate flex items-center gap-2">
+                {agent.agentId}
+                <Badge className={`text-xs ${getAgentTypeColor(agent.agentType)}`}>
+                  {agent.agentType}
+                </Badge>
+              </CardTitle>
+              <div className="text-xs text-muted-foreground mt-1">
+                Pool ID: {agent.id.slice(0, 8)}...
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-2">

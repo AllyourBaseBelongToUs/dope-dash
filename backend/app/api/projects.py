@@ -900,6 +900,76 @@ async def restart_project(
     }
 
 
+@router.get("/unassigned")
+async def get_unassigned_projects(
+    session: AsyncSession = Depends(get_db_session),
+) -> dict[str, Any]:
+    """Get projects that have no agent assigned.
+
+    Returns projects that are idle, queued, or have no active agents.
+    These are good candidates for drag-and-drop assignment.
+
+    Args:
+        session: Database session
+
+    Returns:
+        Dictionary with list of unassigned projects
+    """
+    from app.models.agent_pool import AgentPool
+
+    # Get projects that are idle, queued, or have no active agents
+    query = select(Project).where(
+        and_(
+            Project.deleted_at.is_(None),
+            or_(
+                Project.active_agents == 0,
+                Project.status == ProjectStatus.IDLE,
+                Project.status == ProjectStatus.QUEUED,
+            ),
+        )
+    ).order_by(
+        desc(Project.priority),
+        desc(Project.updated_at)
+    )
+
+    result = await session.execute(query)
+    projects = result.scalars().all()
+
+    # Also get project IDs that have agents assigned via the agent pool
+    assigned_project_ids_query = select(AgentPool.current_project_id).where(
+        and_(
+            AgentPool.current_project_id.isnot(None),
+            AgentPool.deleted_at.is_(None),
+        )
+    ).distinct()
+
+    assigned_result = await session.execute(assigned_project_ids_query)
+    assigned_project_ids = {row[0] for row in assigned_result.fetchall() if row[0]}
+
+    # Filter out projects that have agents via the pool
+    unassigned = [
+        p for p in projects
+        if p.id not in assigned_project_ids
+    ]
+
+    return {
+        "projects": [
+            {
+                "id": str(p.id),
+                "name": p.name,
+                "status": p.status.value,
+                "priority": p.priority.value,
+                "description": p.description,
+                "progress": p.progress,
+                "total_specs": p.total_specs,
+                "completed_specs": p.completed_specs,
+            }
+            for p in unassigned
+        ],
+        "total": len(unassigned),
+    }
+
+
 @router.get("/stats/summary")
 async def get_projects_summary(
     session: AsyncSession = Depends(get_db_session),

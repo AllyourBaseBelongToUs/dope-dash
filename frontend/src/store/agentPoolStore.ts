@@ -26,6 +26,7 @@ interface AgentPoolState {
   scalingHistory: ScalingEvent[];
   isLoading: boolean;
   isRefreshing: boolean;
+  isDetecting: boolean;
   error: string | null;
 
   // Filters
@@ -54,6 +55,7 @@ interface AgentPoolState {
   setScalingHistory: (history: ScalingEvent[]) => void;
   setLoading: (loading: boolean) => void;
   setRefreshing: (refreshing: boolean) => void;
+  setDetecting: (detecting: boolean) => void;
   setError: (error: string | null) => void;
   setStatusFilter: (status: PoolAgentStatus | 'all') => void;
   setAgentTypeFilter: (type: AgentType | 'all') => void;
@@ -71,6 +73,7 @@ interface AgentPoolState {
   registerAgent: (data: AgentPoolCreateRequest) => Promise<void>;
   updateAgent: (poolId: string, data: AgentPoolUpdateRequest) => Promise<void>;
   unregisterAgent: (poolId: string) => Promise<void>;
+  detectAgents: (projectDir?: string) => Promise<{ detected: number; agents: any[] }>;
 
   // API Actions - Agent Control
   setAgentStatus: (agentId: string, status: PoolAgentStatus) => Promise<void>;
@@ -116,6 +119,7 @@ export const useAgentPoolStore = create<AgentPoolState>((set, get) => ({
   scalingHistory: [],
   isLoading: false,
   isRefreshing: false,
+  isDetecting: false,
   error: null,
 
   // Filters
@@ -144,6 +148,7 @@ export const useAgentPoolStore = create<AgentPoolState>((set, get) => ({
   setScalingHistory: (history) => set({ scalingHistory: history }),
   setLoading: (isLoading) => set({ isLoading }),
   setRefreshing: (isRefreshing) => set({ isRefreshing }),
+  setDetecting: (isDetecting) => set({ isDetecting }),
   setError: (error) => set({ error }),
   setStatusFilter: (statusFilter) => set({ statusFilter, offset: 0 }),
   setAgentTypeFilter: (agentTypeFilter) => set({ agentTypeFilter, offset: 0 }),
@@ -289,6 +294,28 @@ export const useAgentPoolStore = create<AgentPoolState>((set, get) => ({
     }
   },
 
+  detectAgents: async (projectDir?: string) => {
+    set({ isDetecting: true, error: null });
+
+    try {
+      const service = getAgentPoolService();
+      const result = await service.detectAgents(projectDir);
+
+      // Refresh the list after detection
+      await get().fetchAgents();
+      await get().fetchMetrics();
+
+      set({ isDetecting: false });
+      return { detected: result.detected, agents: result.agents };
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'Failed to detect agents',
+        isDetecting: false,
+      });
+      throw error;
+    }
+  },
+
   // API Actions - Agent Control
   setAgentStatus: async (agentId: string, status: PoolAgentStatus) => {
     set({ isLoading: true, error: null });
@@ -376,9 +403,11 @@ export const useAgentPoolStore = create<AgentPoolState>((set, get) => ({
     try {
       const service = getAgentPoolService();
       const metrics = await service.getPoolMetrics();
-      set({ metrics });
+      set({ metrics, error: null });
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch metrics';
       console.error('Failed to fetch metrics:', error);
+      set({ error: errorMessage });
     }
   },
 
@@ -386,9 +415,11 @@ export const useAgentPoolStore = create<AgentPoolState>((set, get) => ({
     try {
       const service = getAgentPoolService();
       const report = await service.getHealthReport();
-      set({ healthReport: report });
+      set({ healthReport: report, error: null });
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch health report';
       console.error('Failed to fetch health report:', error);
+      set({ error: errorMessage });
     }
   },
 
@@ -396,9 +427,11 @@ export const useAgentPoolStore = create<AgentPoolState>((set, get) => ({
     try {
       const service = getAgentPoolService();
       const recommendation = await service.getScalingRecommendation();
-      set({ scalingRecommendation: recommendation });
+      set({ scalingRecommendation: recommendation, error: null });
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch scaling recommendation';
       console.error('Failed to fetch scaling recommendation:', error);
+      set({ error: errorMessage });
     }
   },
 
@@ -407,9 +440,11 @@ export const useAgentPoolStore = create<AgentPoolState>((set, get) => ({
     try {
       const service = getAgentPoolService();
       const policy = await service.getScalingPolicy();
-      set({ scalingPolicy: policy });
+      set({ scalingPolicy: policy, error: null });
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch scaling policy';
       console.error('Failed to fetch scaling policy:', error);
+      set({ error: errorMessage });
     }
   },
 
@@ -433,9 +468,11 @@ export const useAgentPoolStore = create<AgentPoolState>((set, get) => ({
     try {
       const service = getAgentPoolService();
       const history = await service.getScalingHistory(50);
-      set({ scalingHistory: history });
+      set({ scalingHistory: history, error: null });
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch scaling history';
       console.error('Failed to fetch scaling history:', error);
+      set({ error: errorMessage });
     }
   },
 
