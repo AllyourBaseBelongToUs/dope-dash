@@ -81,6 +81,62 @@ class PortfolioService {
   }
 
   /**
+   * Transform camelCase frontend request to snake_case API format for CREATE
+   */
+  private transformCreateRequest(data: {
+    name: string;
+    status?: ProjectStatus;
+    priority?: ProjectPriority;
+    description?: string;
+    progress?: number;
+    totalSpecs?: number;
+    completedSpecs?: number;
+    activeAgents?: number;
+    metadata?: Record<string, unknown>;
+  }): Record<string, unknown> {
+    return {
+      name: data.name,
+      status: data.status,
+      priority: data.priority,
+      description: data.description,
+      progress: data.progress,
+      total_specs: data.totalSpecs,
+      completed_specs: data.completedSpecs,
+      active_agents: data.activeAgents,
+      metadata: data.metadata,
+    };
+  }
+
+  /**
+   * Transform camelCase frontend request to snake_case API format for UPDATE
+   */
+  private transformUpdateRequest(data: Partial<{
+    status: ProjectStatus;
+    priority: ProjectPriority;
+    description: string;
+    progress: number;
+    totalSpecs: number;
+    completedSpecs: number;
+    activeAgents: number;
+    lastActivityAt: string;
+    metadata: Record<string, unknown>;
+  }>): Record<string, unknown> {
+    const result: Record<string, unknown> = {};
+
+    if (data.status !== undefined) result.status = data.status;
+    if (data.priority !== undefined) result.priority = data.priority;
+    if (data.description !== undefined) result.description = data.description;
+    if (data.progress !== undefined) result.progress = data.progress;
+    if (data.totalSpecs !== undefined) result.total_specs = data.totalSpecs;
+    if (data.completedSpecs !== undefined) result.completed_specs = data.completedSpecs;
+    if (data.activeAgents !== undefined) result.active_agents = data.activeAgents;
+    if (data.lastActivityAt !== undefined) result.last_activity_at = data.lastActivityAt;
+    if (data.metadata !== undefined) result.metadata = data.metadata;
+
+    return result;
+  }
+
+  /**
    * Fetch all projects with optional filtering and search
    */
   async getProjects(params?: {
@@ -185,7 +241,7 @@ class PortfolioService {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(projectData),
+        body: JSON.stringify(this.transformCreateRequest(projectData)),
       });
 
       if (!response.ok) {
@@ -224,7 +280,7 @@ class PortfolioService {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(projectData),
+        body: JSON.stringify(this.transformUpdateRequest(projectData)),
       });
 
       if (!response.ok) {

@@ -47,6 +47,87 @@ _auto_scaler = get_agent_auto_scaler()
 
 
 # ============================================================================
+# Agent Detection Endpoints
+# ============================================================================
+
+
+@router.post("/detect", response_model=dict[str, Any])
+async def trigger_agent_detection(
+    project_dir: str | None = Query(None, description="Optional project directory to scan"),
+    session: AsyncSession = Depends(get_db_session),
+) -> dict[str, Any]:
+    """Manually trigger agent detection scan.
+
+    Scans for running agents using the agent detector and syncs them
+    to the database. Returns immediately with detection results.
+
+    Args:
+        project_dir: Optional specific project directory to scan
+        session: Database session
+
+    Returns:
+        Detection results with count and agent details
+    """
+    from app.services.agent_registry import get_agent_registry
+    from app.services.agent_pool_sync import get_agent_pool_sync_service
+    from pathlib import Path
+
+    registry = get_agent_registry()
+    sync_service = get_agent_pool_sync_service()
+
+    detected_agents = []
+
+    try:
+        # Run detection
+        if project_dir:
+            detected = await registry.detect_and_register(project_dir)
+            detected_agents = detected
+        else:
+            # General scan - detect all agents
+            detected = await registry._detector.detect_all_agents()
+            # Register any newly detected agents
+            for agent_info in detected:
+                existing = registry.get_agent(agent_info.agent_type.value + "-" + agent_info.project_name)
+                if not existing:
+                    agent = await registry.register_agent(
+                        agent_type=agent_info.agent_type,
+                        project_name=agent_info.project_name,
+                        pid=agent_info.pid,
+                        working_dir=agent_info.working_dir,
+                        command=agent_info.command,
+                        tmux_session=agent_info.tmux_session,
+                        metadata=agent_info.metadata,
+                    )
+                    detected_agents.append(agent)
+                else:
+                    detected_agents.append(existing)
+
+        # Sync to database
+        sync_result = await sync_service.sync_once()
+
+        await session.commit()
+
+        return {
+            "detected": len(detected_agents),
+            "agents": [
+                {
+                    "type": a.agent_type.value,
+                    "project": a.project_name,
+                    "pid": a.pid,
+                    "working_dir": a.working_dir,
+                    "agent_id": a.agent_id,
+                }
+                for a in detected_agents
+            ],
+            "sync": sync_result,
+        }
+
+    except Exception as e:
+        logger.error(f"Agent detection failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Detection failed: {str(e)}")
+
+
+# ============================================================================
 # Pool Management Endpoints
 # ============================================================================
 

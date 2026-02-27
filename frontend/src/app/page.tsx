@@ -7,6 +7,7 @@ import { usePolling } from '@/hooks/usePolling';
 import { useNetworkMonitoring } from '@/hooks/useNetworkMonitoring';
 import { useNotificationStore } from '@/store/notificationStore';
 import { useEnvironmentStore } from '@/store/environmentStore';
+import { AppShell } from '@/components/AppShell';
 import { ConnectionStatus } from '@/components/ConnectionStatus';
 import { EnvironmentBadge } from '@/components/EnvironmentBadge';
 import { SessionCard } from '@/components/SessionCard';
@@ -97,44 +98,35 @@ export default function Home() {
 
   const activeSession = sessions.find(s => s.id === activeSessionId) || sessions[0];
 
-  return (
-    <main className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="bg-primary/10 p-2 rounded-lg">
-                <Activity className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">Dope Dash</h1>
-                <p className="text-xs text-muted-foreground">Multi-Agent Control Center</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <SoundToggleButton />
-              <NotificationPreferences />
-              <EnvironmentBadge />
-              <ConnectionStatus status={connectionStatus} />
-              {connectionStatus === 'polling' && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={retryConnection}
-                  className="text-xs"
-                >
-                  <RefreshCw className="h-3 w-3 mr-1" />
-                  Retry
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+  const pageActions = (
+    <>
+      <SoundToggleButton />
+      <NotificationPreferences />
+      <EnvironmentBadge />
+      <ConnectionStatus status={connectionStatus} />
+      {connectionStatus === 'polling' && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={retryConnection}
+          className="text-xs"
+        >
+          <RefreshCw className="h-3 w-3 mr-1" />
+          Retry
+        </Button>
+      )}
+    </>
+  );
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-6">
+  return (
+    <>
+      <AppShell
+        title="Dope Dash"
+        subtitle="Multi-Agent Control Center"
+        icon={<Activity className="h-5 w-5 text-primary" />}
+        actions={pageActions}
+        sessionCount={sessions.length}
+      >
         {/* Global Error Notifications */}
         <ErrorNotifications />
 
@@ -163,16 +155,16 @@ export default function Home() {
               <h2 className="text-lg font-semibold text-foreground">
                 Active Sessions
               </h2>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-sm" style={{ color: 'var(--font-color)' }}>
                 {sessions.length} {sessions.length === 1 ? 'session' : 'sessions'}
               </span>
             </div>
 
             {sessions.length === 0 ? (
               <div className="border border-dashed border-border rounded-lg p-8 text-center">
-                <Activity className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">No active sessions</p>
-                <p className="text-sm text-muted-foreground mt-1">
+                <Activity className="h-12 w-12 mx-auto mb-4" style={{ color: 'var(--chart-overlay-color)' }} />
+                <p style={{ color: 'var(--font-color)' }}>No active sessions</p>
+                <p className="text-sm mt-1" style={{ color: 'var(--font-color)' }}>
                   Start a Ralph agent session to see progress here
                 </p>
               </div>
@@ -194,19 +186,10 @@ export default function Home() {
             <EventLog events={events} maxEvents={100} />
           </div>
         </div>
-      </div>
+      </AppShell>
 
       {/* Command Palette */}
       <CommandPalette sessions={sessions} />
-
-      {/* Footer */}
-      <footer className="border-t border-border mt-8">
-        <div className="container mx-auto px-4 py-4">
-          <p className="text-xs text-muted-foreground text-center">
-            Dope Dash - Real-time multi-agent control center
-          </p>
-        </div>
-      </footer>
-    </main>
+    </>
   );
 }

@@ -586,6 +586,29 @@ export interface AgentPoolAgent {
   utilizationPercent: number;
   completionRate: number;
   isAvailable: boolean;
+  // Quota usage tracking
+  usage?: {
+    current: number;
+    max: number;
+    resetsAt?: string;
+  };
+  // Provider tier
+  tier?: 'free' | 'paid';
+  // Authentication status
+  isAuthenticated?: boolean;
+  // Runtime tracking
+  startedAt?: string;
+  // Model information
+  model?: string;
+  // Performance metrics
+  requestRate?: number;
+  errorRate?: number;
+  avgResponseTime?: number;
+  // Assigned project details (for display)
+  assignedProject?: {
+    id: string;
+    name: string;
+  };
 }
 
 export interface AgentPoolListResponse {

@@ -68,6 +68,24 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     except Exception as e:
         print(f"⚠ Failed to start queue processor: {e}")
 
+    # Start agent registry monitoring
+    try:
+        from app.services.agent_registry import get_agent_registry
+        agent_registry = get_agent_registry()
+        await agent_registry.start_monitoring(interval=30)
+        print("✓ Agent registry monitoring started")
+    except Exception as e:
+        print(f"⚠ Failed to start agent registry monitoring: {e}")
+
+    # Start agent pool sync service
+    try:
+        from app.services.agent_pool_sync import get_agent_pool_sync_service
+        sync_service = get_agent_pool_sync_service()
+        await sync_service.start_sync()
+        print("✓ Agent pool sync service started")
+    except Exception as e:
+        print(f"⚠ Failed to start agent pool sync service: {e}")
+
     yield
 
     # Shutdown: Close database connection pool, stop scheduler, and stop queue processor
@@ -88,6 +106,24 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         print("✓ Background scheduler stopped")
     except Exception as e:
         print(f"⚠ Error stopping scheduler: {e}")
+
+    # Stop agent registry monitoring
+    try:
+        from app.services.agent_registry import get_agent_registry
+        agent_registry = get_agent_registry()
+        await agent_registry.stop_monitoring()
+        print("✓ Agent registry monitoring stopped")
+    except Exception as e:
+        print(f"⚠ Error stopping agent registry monitoring: {e}")
+
+    # Stop agent pool sync service
+    try:
+        from app.services.agent_pool_sync import get_agent_pool_sync_service
+        sync_service = get_agent_pool_sync_service()
+        await sync_service.stop_sync()
+        print("✓ Agent pool sync service stopped")
+    except Exception as e:
+        print(f"⚠ Error stopping agent pool sync service: {e}")
 
     try:
         if _http_session:
@@ -162,6 +198,7 @@ from app.api.agent_pool import router as agent_pool_router
 from app.api.quota import router as quota_router
 from app.api.quota_alerts import router as quota_alerts_router
 from app.api.auto_pause import router as auto_pause_router
+from app.api.session_control import router as session_control_router
 
 app.include_router(query_router)
 app.include_router(reports_router)
@@ -173,3 +210,4 @@ app.include_router(agent_pool_router)
 app.include_router(quota_router)
 app.include_router(quota_alerts_router)
 app.include_router(auto_pause_router)
+app.include_router(session_control_router)

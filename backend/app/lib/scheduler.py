@@ -215,11 +215,12 @@ def calculate_next_run(frequency: ScheduleFrequency) -> datetime | None:
 
 
 def start_scheduler() -> None:
-    """Start the background scheduler for scheduled reports and retention cleanup.
+    """Start the background scheduler for scheduled reports, retention cleanup, and agent detection.
 
     This adds jobs that:
     - Check for scheduled reports every minute
     - Run retention cleanup daily at 3 AM
+    - Run agent detection every 2 minutes
     """
     scheduler = get_scheduler()
 
@@ -239,6 +240,15 @@ def start_scheduler() -> None:
         hour=3,
         minute=0,
         id="retention_cleanup",
+        replace_existing=True,
+    )
+
+    # Add periodic agent detection job every 2 minutes
+    scheduler.add_job(
+        run_agent_detection,
+        "interval",
+        minutes=2,
+        id="agent_detection",
         replace_existing=True,
     )
 
@@ -277,6 +287,55 @@ async def run_retention_cleanup() -> None:
 
         except Exception as e:
             logger.error(f"Error in retention cleanup: {e}", exc_info=True)
+
+
+async def run_agent_detection() -> None:
+    """Run periodic agent detection scan.
+
+    This function is called periodically to detect running agents
+    and sync them to the database.
+    """
+    logger.info("Starting periodic agent detection")
+
+    try:
+        from app.services.agent_registry import get_agent_registry
+        from app.services.agent_pool_sync import get_agent_pool_sync_service
+
+        registry = get_agent_registry()
+        sync_service = get_agent_pool_sync_service()
+
+        # Detect all agents
+        detected = await registry._detector.detect_all_agents()
+
+        # Register any newly detected agents
+        registered_count = 0
+        for agent_info in detected:
+            existing = registry.get_agent(
+                f"{agent_info.agent_type.value}-{agent_info.project_name}"
+            )
+            if not existing:
+                await registry.register_agent(
+                    agent_type=agent_info.agent_type,
+                    project_name=agent_info.project_name,
+                    pid=agent_info.pid,
+                    working_dir=agent_info.working_dir,
+                    command=agent_info.command,
+                    tmux_session=agent_info.tmux_session,
+                    metadata=agent_info.metadata,
+                )
+                registered_count += 1
+
+        # Sync to database
+        sync_result = await sync_service.sync_once()
+
+        logger.info(
+            f"Agent detection completed: "
+            f"{len(detected)} detected, {registered_count} newly registered, "
+            f"sync: {sync_result['added']} added, {sync_result['updated']} updated"
+        )
+
+    except Exception as e:
+        logger.error(f"Error in agent detection: {e}", exc_info=True)
 
 
 def restart_scheduler() -> None:

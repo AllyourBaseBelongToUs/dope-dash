@@ -15,6 +15,8 @@ class SessionStatus(str, enum.Enum):
     """Session lifecycle states."""
 
     RUNNING = "running"
+    PAUSED = "paused"
+    ABORTED = "aborted"
     COMPLETED = "completed"
     FAILED = "failed"
     CANCELLED = "cancelled"

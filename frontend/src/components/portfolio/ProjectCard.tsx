@@ -1,3 +1,6 @@
+'use client';
+
+import { useDroppable } from '@dnd-kit/core';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,6 +19,7 @@ import {
   ListOrdered,
   XCircle,
   AlertTriangle,
+  UserPlus,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -26,6 +30,7 @@ import {
 import type { Project, ProjectStatus } from '@/types';
 import { formatDistanceToNow } from 'date-fns';
 import { ProjectControls } from './ProjectControls';
+import { cn } from '@/lib/utils';
 
 interface ProjectCardProps {
   project: Project;
@@ -37,6 +42,10 @@ interface ProjectCardProps {
   isSelected?: boolean;
   onToggleSelection?: (projectId: string) => void;
   isBulkMode?: boolean;
+  /** Whether the card accepts drag-and-drop agent assignments (default: true) */
+  droppable?: boolean;
+  /** Callback when an agent is dropped on this project */
+  onAgentDrop?: (agentId: string, projectId: string) => void;
 }
 
 const getStatusColor = (status: ProjectStatus): string => {
@@ -94,11 +103,48 @@ const getStatusIcon = (status: ProjectStatus) => {
   }
 };
 
-export function ProjectCard({ project, onView, onSync, onDelete, isUpdating, onControlApplied, isSelected, onToggleSelection, isBulkMode }: ProjectCardProps) {
+export function ProjectCard({
+  project,
+  onView,
+  onSync,
+  onDelete,
+  isUpdating,
+  onControlApplied,
+  isSelected,
+  onToggleSelection,
+  isBulkMode,
+  droppable = true,
+  onAgentDrop,
+}: ProjectCardProps) {
   const progressPercentage = Math.round(project.progress * 100);
 
+  // Setup droppable for agent assignment
+  const { setNodeRef, isOver, active } = useDroppable({
+    id: `project-${project.id}`,
+    data: {
+      type: 'project',
+      projectId: project.id,
+      projectName: project.name,
+      project,
+    },
+    disabled: !droppable,
+  });
+
+  // Check if this is a valid drop target (agent being dragged)
+  const dragType = active?.data.current?.type;
+  const isValidDrop = !droppable ? false : dragType === 'agent';
+  const showDropIndicator = isOver && isValidDrop;
+
   return (
-    <Card className={`group hover:border-primary/50 transition-colors ${isSelected ? 'ring-2 ring-primary' : ''}`}>
+    <Card
+      ref={setNodeRef}
+      className={cn(
+        'group hover:border-primary/50 transition-all',
+        isSelected && 'ring-2 ring-primary',
+        showDropIndicator && 'ring-2 ring-green-500 bg-green-500/5 border-green-500/50',
+        isOver && !isValidDrop && 'ring-2 ring-red-500 bg-red-500/5 border-red-500/50'
+      )}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -115,7 +161,7 @@ export function ProjectCard({ project, onView, onSync, onDelete, isUpdating, onC
                 {project.name}
               </CardTitle>
               {project.description && (
-                <p className="text-sm text-muted-foreground truncate mt-1">
+                <p className="text-sm truncate mt-1" style={{ color: 'var(--font-color)' }}>
                   {project.description}
                 </p>
               )}
@@ -174,7 +220,7 @@ export function ProjectCard({ project, onView, onSync, onDelete, isUpdating, onC
         {/* Progress Bar */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Progress</span>
+            <span style={{ color: 'var(--font-color)' }}>Progress</span>
             <span className="font-medium">
               {project.completedSpecs} / {project.totalSpecs} specs
             </span>
@@ -185,7 +231,7 @@ export function ProjectCard({ project, onView, onSync, onDelete, isUpdating, onC
               style={{ width: `${progressPercentage}%` }}
             />
           </div>
-          <div className="text-right text-xs text-muted-foreground">
+          <div className="text-right text-xs" style={{ color: 'var(--chart-overlay-color)' }}>
             {progressPercentage}% complete
           </div>
         </div>
@@ -193,16 +239,16 @@ export function ProjectCard({ project, onView, onSync, onDelete, isUpdating, onC
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-3">
           <div className="flex items-center gap-2 text-sm">
-            <Activity className="h-4 w-4 text-muted-foreground" />
+            <Activity className="h-4 w-4" style={{ color: 'var(--chart-overlay-color)' }} />
             <div>
-              <div className="text-muted-foreground text-xs">Active Agents</div>
+              <div className="text-xs" style={{ color: 'var(--font-color)' }}>Active Agents</div>
               <div className="font-medium">{project.activeAgents}</div>
             </div>
           </div>
           <div className="flex items-center gap-2 text-sm">
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <Clock className="h-4 w-4" style={{ color: 'var(--chart-overlay-color)' }} />
             <div>
-              <div className="text-muted-foreground text-xs">Last Activity</div>
+              <div className="text-xs" style={{ color: 'var(--font-color)' }}>Last Activity</div>
               <div className="font-medium">
                 {project.lastActivityAt
                   ? formatDistanceToNow(new Date(project.lastActivityAt), { addSuffix: true })

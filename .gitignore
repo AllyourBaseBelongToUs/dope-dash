@@ -80,4 +80,5 @@ backend.log
 
 # Development artifacts
 .codex/
+.forest/
 nul

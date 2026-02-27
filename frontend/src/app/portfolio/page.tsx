@@ -1,15 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { usePortfolioStore } from '@/store/portfolioStore';
+import { useAgentPoolStore } from '@/store/agentPoolStore';
+import { AppShell } from '@/components/AppShell';
 import { PortfolioSummary } from '@/components/portfolio/PortfolioSummary';
 import { PortfolioFilters } from '@/components/portfolio/PortfolioFilters';
 import { ProjectCard } from '@/components/portfolio/ProjectCard';
 import { ProjectDetailDialog } from '@/components/portfolio/ProjectDetailDialog';
+import { CreateProjectDialog } from '@/components/portfolio/CreateProjectDialog';
 import { BulkActionBar } from '@/components/portfolio/BulkActionBar';
 import { BulkOperationResults } from '@/components/portfolio/BulkOperationResults';
+import { AssignmentDnDContext } from '@/components/dnd';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { toast } from '@/components/ui/use-toast';
 import {
   FolderKanban,
   Plus,
@@ -40,6 +45,8 @@ export default function PortfolioPage() {
     priorityFilter,
     searchQuery,
     total,
+    limit,
+    offset,
     selectedProjectIds,
     isAllSelected,
     fetchProjects,
@@ -48,6 +55,7 @@ export default function PortfolioPage() {
     setStatusFilter,
     setPriorityFilter,
     setSearchQuery,
+    setOffset,
     syncProject,
     deleteProject,
     refresh,
@@ -56,10 +64,46 @@ export default function PortfolioPage() {
     deselectAllProjects,
   } = usePortfolioStore();
 
+  const { assignAgent } = useAgentPoolStore();
+
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [projectToSync, setProjectToSync] = useState<string | null>(null);
   const [bulkOperationResult, setBulkOperationResult] = useState<BulkOperationResult | null>(null);
   const [isBulkMode, setIsBulkMode] = useState(false);
+
+  // Handle drag-and-drop agent assignment
+  const handleAgentAssign = useCallback(async (agentId: string, projectId: string) => {
+    try {
+      const response = await assignAgent({
+        projectId,
+        preferredAgentId: agentId,
+        capabilities: [],
+      });
+
+      if (response.success) {
+        toast({
+          title: 'Agent assigned',
+          description: `Agent ${agentId} assigned to project successfully`,
+        });
+        // Refresh to show updated state
+        await fetchProjects();
+        await fetchSummary();
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Assignment failed',
+          description: response.message || 'Failed to assign agent',
+        });
+      }
+    } catch (err) {
+      toast({
+        variant: 'destructive',
+        title: 'Assignment failed',
+        description: err instanceof Error ? err.message : 'Failed to assign agent',
+      });
+    }
+  }, [assignAgent, fetchProjects, fetchSummary]);
 
   // Load initial data
   useEffect(() => {
@@ -119,59 +163,46 @@ export default function PortfolioPage() {
     setSearchQuery('');
     setStatusFilter('all');
     setPriorityFilter('all');
+    setOffset(0);
   };
 
   return (
-    <main className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="bg-primary/10 p-2 rounded-lg">
-                <FolderKanban className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">Portfolio</h1>
-                <p className="text-xs text-muted-foreground">Mission Control - Project Overview</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => refresh()}
-                disabled={isLoading}
-              >
-                <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-                Refresh
-              </Button>
-              <Button
-                variant={isBulkMode ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => {
-                  setIsBulkMode(!isBulkMode);
-                  if (isBulkMode) {
-                    deselectAllProjects();
-                  }
-                }}
-              >
-                {isBulkMode ? (
-                  <>Exit Bulk Mode</>
-                ) : (
-                  <>Bulk Select</>
-                )}
-              </Button>
-              <Button size="sm" onClick={() => {/* TODO: Open create project dialog */}}>
-                <Plus className="h-4 w-4 mr-2" />
-                New Project
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <div className="container mx-auto px-4 py-6">
+    <AssignmentDnDContext onAssign={handleAgentAssign}>
+      <AppShell
+        title="Portfolio"
+        subtitle="Mission Control - Project Overview"
+        icon={<FolderKanban className="h-5 w-5 text-primary" />}
+        sessionCount={projects.filter(p => p.status === 'running').length}
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refresh()}
+              disabled={isLoading}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+            <Button
+              variant={isBulkMode ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => {
+                setIsBulkMode(!isBulkMode);
+                if (isBulkMode) {
+                  deselectAllProjects();
+                }
+              }}
+            >
+              {isBulkMode ? 'Exit Bulk Mode' : 'Bulk Select'}
+            </Button>
+            <Button size="sm" onClick={() => setCreateDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              New Project
+            </Button>
+          </>
+        }
+      >
         {/* Error State */}
         {error && (
           <div className="mb-6 border border-red-500/50 bg-red-500/10 rounded-lg p-4 flex items-center gap-3">
@@ -223,7 +254,7 @@ export default function PortfolioPage() {
                   }}
                   className="shrink-0"
                 />
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm" style={{ color: 'var(--font-color)' }}>
                   {selectedProjectIds.size > 0
                     ? `${selectedProjectIds.size} selected`
                     : 'Select all'}
@@ -269,15 +300,15 @@ export default function PortfolioPage() {
             </div>
           ) : (
             <div className="border border-dashed border-border rounded-lg p-12 text-center">
-              <FolderKanban className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <FolderKanban className="h-12 w-12 mx-auto mb-4" style={{ color: 'var(--chart-overlay-color)' }} />
               <h3 className="text-lg font-medium mb-2">No projects found</h3>
-              <p className="text-muted-foreground mb-4">
-                {hasActiveFilters()
+              <p className="mb-4" style={{ color: 'var(--font-color)' }}>
+                {hasActiveFilters(searchQuery, statusFilter, priorityFilter)
                   ? 'Try adjusting your filters to see more results.'
                   : 'Get started by creating your first project.'}
               </p>
-              {!hasActiveFilters() && (
-                <Button size="sm" onClick={() => {/* TODO: Open create project dialog */}}>
+              {!hasActiveFilters(searchQuery, statusFilter, priorityFilter) && (
+                <Button size="sm" onClick={() => setCreateDialogOpen(true)}>
                   <Plus className="h-4 w-4 mr-2" />
                   Create Project
                 </Button>
@@ -292,14 +323,14 @@ export default function PortfolioPage() {
             <Button
               variant="outline"
               onClick={() => {
-                // TODO: Implement pagination
+                setOffset(offset + limit);
               }}
             >
               Load More ({total - projects.length} remaining)
             </Button>
           </div>
         )}
-      </div>
+      </AppShell>
 
       {/* Detail Dialog */}
       <ProjectDetailDialog
@@ -345,11 +376,16 @@ export default function PortfolioPage() {
           onClose={() => setBulkOperationResult(null)}
         />
       )}
-    </main>
+
+      {/* Create Project Dialog */}
+      <CreateProjectDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+      />
+    </AssignmentDnDContext>
   );
 }
 
-function hasActiveFilters() {
-  // This is a helper function - in real implementation you'd check the store
-  return false;
+function hasActiveFilters(searchQuery: string, statusFilter: ProjectStatus | 'all', priorityFilter: ProjectPriority | 'all') {
+  return searchQuery.trim() !== '' || statusFilter !== 'all' || priorityFilter !== 'all';
 }
