@@ -131,7 +131,8 @@ class AgentPool(Base, TimestampMixin, SoftDeleteMixin):
         nullable=False,
         default=list,
     )
-    metadata: Mapped[dict[str, Any]] = mapped_column(
+    agent_metadata: Mapped[dict[str, Any]] = mapped_column(
+        "metadata",  # Column name stays 'metadata' in DB
         JSON,
         nullable=False,
         default=dict,

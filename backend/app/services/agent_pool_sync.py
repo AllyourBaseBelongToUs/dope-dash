@@ -140,7 +140,7 @@ class AgentPoolSyncService:
                         current_load=0,
                         max_capacity=5,
                         capabilities=[c.name for c in detected.capabilities],
-                        metadata=detected.metadata,
+                        agent_metadata=detected.metadata,
                     )
                     session.add(new_agent)
                     added += 1
