@@ -39,11 +39,22 @@ export default function AssignmentPage() {
     fetchProjects();
   }, [fetchAgents, fetchProjects]);
 
-  // Create project session data from projects (memoized for performance)
-  const projectSessionData: ProjectSessionData[] = useMemo(() =>
-    projects.map(project => {
-      // Find linked agent for this project
-      const linkedAgent = agents.find(a => a.currentProjectId === project.id || a.assignedProject?.id === project.id);
+  // Create project session data from projects (memoized with O(n) lookup via Map)
+  const projectSessionData: ProjectSessionData[] = useMemo(() => {
+    // Build lookup map once - O(n) where n = agents
+    const agentByProjectId = new Map<string, typeof agents[0]>();
+    for (const agent of agents) {
+      if (agent.currentProjectId) {
+        agentByProjectId.set(agent.currentProjectId, agent);
+      }
+      if (agent.assignedProject?.id && !agentByProjectId.has(agent.assignedProject.id)) {
+        agentByProjectId.set(agent.assignedProject.id, agent);
+      }
+    }
+
+    // Map projects with O(1) lookup per project
+    return projects.map(project => {
+      const linkedAgent = agentByProjectId.get(project.id);
 
       return {
         id: project.id,
@@ -59,8 +70,8 @@ export default function AssignmentPage() {
                  project.status === 'idle' ? 'idle' :
                  project.status === 'completed' ? 'completed' : 'error',
       };
-    }), [projects, agents]
-  );
+    });
+  }, [projects, agents]);
 
   const handleAssign = useCallback(async (agentId: string, projectId: string) => {
     try {

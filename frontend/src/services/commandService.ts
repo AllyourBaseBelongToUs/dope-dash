@@ -15,9 +15,10 @@ import type {
 } from '@/types';
 
 // FIXED: Use consistent API URL from environment or fallback
+// Step-5 port spacing: 8000, 8005, 8010, 8015, 8020
 const API_BASE_URL = process.env.NEXT_PUBLIC_CONTROL_API_URL ||
                       process.env.NEXT_PUBLIC_API_URL ||
-                      'http://localhost:8002';
+                      'http://localhost:8010';
 
 /** Command service class. */
 class CommandService {

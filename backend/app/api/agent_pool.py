@@ -51,6 +51,44 @@ _auto_scaler = get_agent_auto_scaler()
 # ============================================================================
 
 
+def _validate_project_path(path_str: str) -> Path:
+    """Validate and resolve a project directory path.
+
+    Args:
+        path_str: Raw path string from user input
+
+    Returns:
+        Resolved, validated Path object
+
+    Raises:
+        HTTPException: If path is invalid or doesn't exist
+    """
+    from pathlib import Path
+
+    try:
+        path = Path(path_str).resolve()
+    except (OSError, ValueError) as e:
+        raise HTTPException(status_code=400, detail=f"Invalid path format: {e}")
+
+    # Check path exists
+    if not path.exists():
+        raise HTTPException(status_code=400, detail=f"Path does not exist: {path}")
+
+    # Must be a directory
+    if not path.is_dir():
+        raise HTTPException(status_code=400, detail=f"Path is not a directory: {path}")
+
+    # Security: prevent path traversal outside user-accessible areas
+    # Block /etc, /root, /sys, /proc, etc.
+    blocked_prefixes = ['/etc', '/root', '/sys', '/proc', '/dev']
+    path_str_resolved = str(path)
+    for blocked in blocked_prefixes:
+        if path_str_resolved.startswith(blocked):
+            raise HTTPException(status_code=400, detail=f"Access denied to system directory: {blocked}")
+
+    return path
+
+
 @router.post("/detect", response_model=dict[str, Any])
 async def trigger_agent_detection(
     project_dir: str | None = Query(None, description="Optional project directory to scan"),
@@ -62,7 +100,7 @@ async def trigger_agent_detection(
     to the database. Returns immediately with detection results.
 
     Args:
-        project_dir: Optional specific project directory to scan
+        project_dir: Optional specific project directory to scan (validated for security)
         session: Database session
 
     Returns:
@@ -75,12 +113,17 @@ async def trigger_agent_detection(
     registry = get_agent_registry()
     sync_service = get_agent_pool_sync_service()
 
+    # Validate project_dir if provided
+    validated_path: Path | None = None
+    if project_dir:
+        validated_path = _validate_project_path(project_dir)
+
     detected_agents = []
 
     try:
         # Run detection
-        if project_dir:
-            detected = await registry.detect_and_register(project_dir)
+        if validated_path:
+            detected = await registry.detect_and_register(str(validated_path))
             detected_agents = detected
         else:
             # General scan - detect all agents

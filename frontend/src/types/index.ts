@@ -786,3 +786,78 @@ export interface AutoPauseSettingsResponse {
   project_name: string;
   settings: AutoPauseSettings;
 }
+
+// Agent Handoff types
+export interface ToolSummary {
+  category: string;
+  count: number;
+  samples: string[];
+}
+
+export interface HandoffContext {
+  id: string;
+  session_id: string;
+  source_agent_type: string;
+  source_agent_id: string;
+  target_agent_type: string;
+  target_agent_id: string;
+  summary: string;
+  tool_summaries: ToolSummary[];
+  files_modified: string[];
+  pending_tasks: string[];
+  decisions: string[];
+  recent_messages: Array<{
+    role: string;
+    content: string;
+    timestamp: string;
+  }>;
+  created_at: string;
+}
+
+export interface HandoffListItem {
+  id: string;
+  session_id: string;
+  source_agent_type: string;
+  source_agent_id: string;
+  target_agent_type: string;
+  target_agent_id: string;
+  summary: string;
+  created_at: string;
+}
+
+export interface HandoffCreateRequest {
+  sessionId: string;
+  targetAgentType: AgentType;
+  targetAgentId: string;
+  summary: string;
+}
+
+export interface HandoffCreateResponse {
+  handoff_id: string;
+  session_id: string;
+  source_agent_type: string;
+  source_agent_id: string;
+  target_agent_type: string;
+  target_agent_id: string;
+  summary: string;
+  files_modified_count: number;
+  pending_tasks_count: number;
+  created_at: string;
+}
+
+export interface HandoffListResponse {
+  handoffs: HandoffListItem[];
+  count: number;
+  filters?: {
+    session_id?: string;
+    source_agent_id?: string;
+    target_agent_id?: string;
+  };
+}
+
+export interface HandoffDetailResponse {
+  handoff_id: string;
+  format: 'json' | 'markdown';
+  context?: HandoffContext;
+  content?: string; // Markdown content when format=markdown
+}

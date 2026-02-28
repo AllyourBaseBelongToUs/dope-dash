@@ -83,6 +83,12 @@ export function getEnvironmentInfo(): EnvironmentInfo | null {
 
 /**
  * Get environment-specific configuration
+ * Port mapping (step-5 spacing): 8000, 8005, 8010, 8015, 8020
+ * - Core API: 8000
+ * - WebSocket: 8005
+ * - Control API: 8010
+ * - Dashboard: 8015
+ * - Analytics: 8020
  */
 export function getEnvironmentConfig(envType: EnvironmentType): EnvironmentConfig {
   // Allow override via environment variables
@@ -92,9 +98,9 @@ export function getEnvironmentConfig(envType: EnvironmentType): EnvironmentConfi
 
   if (envWsUrl || envApiUrl || envControlApiUrl) {
     return {
-      wsUrl: envWsUrl || 'ws://localhost:8001/ws',
-      apiUrl: envApiUrl || 'http://localhost:8001/api/events',
-      controlApiUrl: envControlApiUrl || 'http://localhost:8002',
+      wsUrl: envWsUrl || 'ws://localhost:8005/ws',
+      apiUrl: envApiUrl || 'http://localhost:8005/api/events',
+      controlApiUrl: envControlApiUrl || 'http://localhost:8010',
     };
   }
 
@@ -103,9 +109,9 @@ export function getEnvironmentConfig(envType: EnvironmentType): EnvironmentConfi
     case 'vm':
       // On VM, connect to services on the same machine
       return {
-        wsUrl: 'ws://localhost:8001/ws',
-        apiUrl: 'http://localhost:8001/api/events',
-        controlApiUrl: 'http://localhost:8002',
+        wsUrl: 'ws://localhost:8005/ws',
+        apiUrl: 'http://localhost:8005/api/events',
+        controlApiUrl: 'http://localhost:8010',
       };
 
     case 'local':
@@ -114,23 +120,23 @@ export function getEnvironmentConfig(envType: EnvironmentType): EnvironmentConfi
       // If accessing via VM hostname, use that for WebSocket too
       if (currentHostname !== 'localhost' && currentHostname !== '127.0.0.1') {
         return {
-          wsUrl: `ws://${currentHostname}:8001/ws`,
-          apiUrl: `http://${currentHostname}:8001/api/events`,
-          controlApiUrl: `http://${currentHostname}:8002`,
+          wsUrl: `ws://${currentHostname}:8005/ws`,
+          apiUrl: `http://${currentHostname}:8005/api/events`,
+          controlApiUrl: `http://${currentHostname}:8010`,
         };
       }
       // Fallback to localhost
       return {
-        wsUrl: 'ws://localhost:8001/ws',
-        apiUrl: 'http://localhost:8001/api/events',
-        controlApiUrl: 'http://localhost:8002',
+        wsUrl: 'ws://localhost:8005/ws',
+        apiUrl: 'http://localhost:8005/api/events',
+        controlApiUrl: 'http://localhost:8010',
       };
 
     default:
       return {
-        wsUrl: 'ws://localhost:8001/ws',
-        apiUrl: 'http://localhost:8001/api/events',
-        controlApiUrl: 'http://localhost:8002',
+        wsUrl: 'ws://localhost:8005/ws',
+        apiUrl: 'http://localhost:8005/api/events',
+        controlApiUrl: 'http://localhost:8010',
       };
   }
 }

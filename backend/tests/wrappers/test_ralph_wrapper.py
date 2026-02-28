@@ -224,7 +224,7 @@ class TestRalphWrapper:
     async def wrapper(self):
         """Create a wrapper instance for testing."""
         wrapper = RalphWrapper(
-            websocket_url="http://localhost:8001",
+            websocket_url="http://localhost:8005",
             project_name="test-project",
         )
         yield wrapper

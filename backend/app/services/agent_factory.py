@@ -29,7 +29,7 @@ class BaseAgentWrapper(ABC):
     def __init__(
         self,
         project_dir: Path,
-        websocket_url: str = "http://localhost:8001",
+        websocket_url: str = "http://localhost:8005",
     ) -> None:
         """Initialize the wrapper.
 
@@ -112,7 +112,7 @@ class AgentFactory:
         self,
         agent_type: AgentType,
         project_dir: Path,
-        websocket_url: str = "http://localhost:8001",
+        websocket_url: str = "http://localhost:8005",
         **kwargs: Any,
     ) -> BaseAgentWrapper:
         """Create a wrapper instance for the specified agent type.
@@ -152,7 +152,7 @@ class AgentFactory:
         working_dir: str | None = None,
         command: str | None = None,
         tmux_session: str | None = None,
-        websocket_url: str = "http://localhost:8001",
+        websocket_url: str = "http://localhost:8005",
         **kwargs: Any,
     ) -> BaseAgentWrapper:
         """Create a wrapper instance from detection information.
@@ -278,7 +278,7 @@ class AgentFactory:
             def __init__(
                 self,
                 project_dir: Path,
-                websocket_url: str = "http://localhost:8001",
+                websocket_url: str = "http://localhost:8005",
                 **kwargs: Any,
             ) -> None:
                 super().__init__(project_dir, websocket_url)

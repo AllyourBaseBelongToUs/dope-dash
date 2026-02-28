@@ -53,31 +53,41 @@ export function ResizableSplitPanel({
     setIsDragging(true);
   }, []);
 
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isDragging || !containerRef.current) return;
+  // Use refs for handlers to prevent memory leaks from stale event listeners
+  const minLeftWidthRef = useRef(minLeftWidth);
+  const maxLeftWidthRef = useRef(maxLeftWidth);
+  const containerRefRef = containerRef;
 
-    const rect = containerRef.current.getBoundingClientRect();
-    const newWidth = ((e.clientX - rect.left) / rect.width) * 100;
-    const clampedWidth = Math.min(maxLeftWidth, Math.max(minLeftWidth, newWidth));
-
-    setLeftWidth(clampedWidth);
-  }, [isDragging, minLeftWidth, maxLeftWidth]);
-
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false);
-  }, []);
-
-  // Global mouse events for smooth dragging
   useEffect(() => {
-    if (isDragging) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
-      return () => {
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('mouseup', handleMouseUp);
-      };
-    }
-  }, [isDragging, handleMouseMove, handleMouseUp]);
+    minLeftWidthRef.current = minLeftWidth;
+    maxLeftWidthRef.current = maxLeftWidth;
+  }, [minLeftWidth, maxLeftWidth]);
+
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const onMove = (e: MouseEvent) => {
+      if (!containerRefRef.current) return;
+
+      const rect = containerRefRef.current.getBoundingClientRect();
+      const newWidth = ((e.clientX - rect.left) / rect.width) * 100;
+      const clampedWidth = Math.min(maxLeftWidthRef.current, Math.max(minLeftWidthRef.current, newWidth));
+
+      setLeftWidth(clampedWidth);
+    };
+
+    const onUp = () => {
+      setIsDragging(false);
+    };
+
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+  }, [isDragging]);
 
   // Keyboard accessibility - arrow keys to resize
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {

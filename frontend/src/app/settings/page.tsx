@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNotificationStore } from '@/store/notificationStore';
 import { useEnvironmentStore } from '@/store/environmentStore';
 import { useConnectionSettingsStore } from '@/store/connectionSettingsStore';
+import { useFeedbackSettingsStore } from '@/store/feedbackSettingsStore';
 import {
   Card,
   CardContent,
@@ -36,6 +37,8 @@ import {
   X,
   FileUp,
   AlertTriangle,
+  MessageSquare,
+  Clock,
 } from 'lucide-react';
 import { NotificationPreference } from '@/types';
 import { useToast } from '@/components/ui/use-toast';
@@ -65,6 +68,11 @@ export default function SettingsPage() {
     updateSettings: updateConnectionSettings,
     resetToDefaults,
   } = useConnectionSettingsStore();
+  const {
+    settings: feedbackSettings,
+    updateSettings: updateFeedbackSettings,
+    resetToDefaults: resetFeedbackToDefaults,
+  } = useFeedbackSettingsStore();
 
   const { toast } = useToast();
 
@@ -366,10 +374,11 @@ export default function SettingsPage() {
   ];
 
   const connectionFields = [
-    { key: 'wsUrl' as const, label: 'WebSocket URL', placeholder: 'ws://localhost:8001/ws' },
-    { key: 'apiUrl' as const, label: 'API URL', placeholder: 'http://localhost:8001/api/events' },
-    { key: 'controlApiUrl' as const, label: 'Control API URL', placeholder: 'http://localhost:8002' },
-    { key: 'analyticsApiUrl' as const, label: 'Analytics API URL', placeholder: 'http://localhost:8004' },
+    // Step-5 port spacing: 8000, 8005, 8010, 8015, 8020
+    { key: 'wsUrl' as const, label: 'WebSocket URL', placeholder: 'ws://localhost:8005/ws' },
+    { key: 'apiUrl' as const, label: 'API URL', placeholder: 'http://localhost:8005/api/events' },
+    { key: 'controlApiUrl' as const, label: 'Control API URL', placeholder: 'http://localhost:8010' },
+    { key: 'analyticsApiUrl' as const, label: 'Analytics API URL', placeholder: 'http://localhost:8020' },
   ];
 
   const highlightMatch = (text: string) => {
@@ -554,7 +563,7 @@ export default function SettingsPage() {
         )}
 
         <Tabs defaultValue="notifications" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
+          <TabsList className="grid w-full grid-cols-4 lg:w-[800px]">
             <TabsTrigger
               value="notifications"
               disabled={!filteredContent.notifications && !!searchQuery}
@@ -568,6 +577,12 @@ export default function SettingsPage() {
             >
               <Link className="h-4 w-4 mr-2" />
               Connections
+            </TabsTrigger>
+            <TabsTrigger
+              value="feedback"
+            >
+              <MessageSquare className="h-4 w-4 mr-2" />
+              AI Feedback
             </TabsTrigger>
             <TabsTrigger
               value="about"
@@ -750,6 +765,133 @@ export default function SettingsPage() {
               </Card>
             </TabsContent>
           )}
+
+          {/* AI Feedback Tab */}
+          <TabsContent value="feedback" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5" />
+                  AI Feedback Integration
+                </CardTitle>
+                <CardDescription>
+                  Configure how AI agents request feedback via the dashboard
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Enable/Disable */}
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="feedback-enabled" className="text-base">
+                      Enable MCP Feedback
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Allow AI agents to request feedback through the dashboard
+                    </p>
+                  </div>
+                  <Switch
+                    id="feedback-enabled"
+                    checked={feedbackSettings.enabled}
+                    onCheckedChange={(checked) => updateFeedbackSettings({ enabled: checked })}
+                  />
+                </div>
+
+                {/* Desktop Notifications */}
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="feedback-notifications" className="text-base">
+                      Desktop Notifications
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Show a notification when an AI agent requests feedback
+                    </p>
+                  </div>
+                  <Switch
+                    id="feedback-notifications"
+                    checked={feedbackSettings.showNotifications}
+                    onCheckedChange={(checked) => updateFeedbackSettings({ showNotifications: checked })}
+                    disabled={!feedbackSettings.enabled}
+                  />
+                </div>
+
+                {/* Fallback to Local */}
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="feedback-fallback" className="text-base">
+                      Fallback to Local UI
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Use local UI if dashboard is unavailable
+                    </p>
+                  </div>
+                  <Switch
+                    id="feedback-fallback"
+                    checked={feedbackSettings.fallbackToLocal}
+                    onCheckedChange={(checked) => updateFeedbackSettings({ fallbackToLocal: checked })}
+                    disabled={!feedbackSettings.enabled}
+                  />
+                </div>
+
+                {/* WebSocket URL */}
+                <div className="space-y-2">
+                  <Label htmlFor="feedback-ws-url">WebSocket URL</Label>
+                  <Input
+                    id="feedback-ws-url"
+                    type="text"
+                    placeholder="ws://localhost:8005/feedback/ws/mcp"
+                    value={feedbackSettings.wsUrl}
+                    onChange={(e) => updateFeedbackSettings({ wsUrl: e.target.value })}
+                    disabled={!feedbackSettings.enabled}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    The WebSocket endpoint for MCP feedback requests
+                  </p>
+                </div>
+
+                {/* Timeout */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="feedback-timeout">Default Timeout (seconds)</Label>
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <Input
+                    id="feedback-timeout"
+                    type="number"
+                    min={30}
+                    max={3600}
+                    value={feedbackSettings.timeout}
+                    onChange={(e) => updateFeedbackSettings({ timeout: parseInt(e.target.value) || 300 })}
+                    disabled={!feedbackSettings.enabled}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    How long to wait for user response before timing out (30-3600 seconds)
+                  </p>
+                </div>
+
+                {/* Reset Button */}
+                <div className="flex justify-end">
+                  <Button
+                    variant="outline"
+                    onClick={resetFeedbackToDefaults}
+                  >
+                    <RotateCcw className="h-4 w-4 mr-2" />
+                    Reset to Defaults
+                  </Button>
+                </div>
+
+                {/* Info Box */}
+                <div className="rounded-lg bg-muted p-4 space-y-2">
+                  <p className="text-sm font-medium">How It Works</p>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• AI agents can request feedback through the MCP protocol</li>
+                    <li>• Requests appear as popups in the dashboard</li>
+                    <li>• You can respond with text or choose from predefined options</li>
+                    <li>• Requests timeout after the configured duration</li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           {/* About Tab */}
           {filteredContent.about && (

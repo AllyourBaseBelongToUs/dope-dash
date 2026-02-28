@@ -39,7 +39,12 @@ import {
 import type { AgentPoolAgent, PoolAgentStatus } from '@/types';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { getAgentColor } from '@/lib/agentColors';
+import {
+  getAgentColor,
+  getStatusStyles,
+  getAgentTypeStyles,
+  getUtilizationColor,
+} from '@/lib/agentColors';
 
 interface AgentCardProps {
   agent: AgentPoolAgent;
@@ -84,23 +89,6 @@ export function AgentCard({ agent, onSelect, onEdit, onDelete, onStatusChange, d
     setNodeRef(node);
   };
 
-  const getStatusColor = (status: PoolAgentStatus): string => {
-    switch (status) {
-      case 'available':
-        return 'bg-green-500/10 text-green-500 border-green-500/20';
-      case 'busy':
-        return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
-      case 'offline':
-        return 'bg-red-500/10 text-red-500 border-red-500/20';
-      case 'maintenance':
-        return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
-      case 'draining':
-        return 'bg-orange-500/10 text-orange-500 border-orange-500/20';
-      default:
-        return 'bg-muted text-muted-foreground';
-    }
-  };
-
   const getStatusIcon = (status: PoolAgentStatus) => {
     switch (status) {
       case 'available':
@@ -116,27 +104,6 @@ export function AgentCard({ agent, onSelect, onEdit, onDelete, onStatusChange, d
       default:
         return null;
     }
-  };
-
-  const getAgentTypeColor = (type: string): string => {
-    const colors: Record<string, string> = {
-      ralph: 'bg-purple-500/10 text-purple-500',
-      claude: 'bg-orange-500/10 text-orange-500',
-      cursor: 'bg-blue-500/10 text-blue-500',
-      terminal: 'bg-gray-500/10 text-gray-500',
-      crawler: 'bg-green-500/10 text-green-500',
-      analyzer: 'bg-cyan-500/10 text-cyan-500',
-      reporter: 'bg-pink-500/10 text-pink-500',
-      tester: 'bg-yellow-500/10 text-yellow-500',
-      custom: 'bg-indigo-500/10 text-indigo-500',
-    };
-    return colors[type] || 'bg-muted text-muted-foreground';
-  };
-
-  const getUtilizationColor = (percent: number): string => {
-    if (percent >= 80) return 'bg-red-500';
-    if (percent >= 60) return 'bg-yellow-500';
-    return 'bg-green-500';
   };
 
   const handleStatusChange = (newStatus: PoolAgentStatus) => {
@@ -178,7 +145,7 @@ export function AgentCard({ agent, onSelect, onEdit, onDelete, onStatusChange, d
             <div className="flex-1 min-w-0">
               <CardTitle className="text-base font-medium truncate flex items-center gap-2">
                 {agent.agentId}
-                <Badge className={`text-xs ${getAgentTypeColor(agent.agentType)}`}>
+                <Badge className="text-xs" style={getAgentTypeStyles(agent.agentType)}>
                   {agent.agentType}
                 </Badge>
               </CardTitle>
@@ -188,7 +155,7 @@ export function AgentCard({ agent, onSelect, onEdit, onDelete, onStatusChange, d
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Badge className={`gap-1.5 ${getStatusColor(agent.status)}`}>
+            <Badge className="gap-1.5" style={getStatusStyles(agent.status)}>
               {getStatusIcon(agent.status)}
               {agent.status}
             </Badge>
@@ -348,12 +315,11 @@ export function AgentCard({ agent, onSelect, onEdit, onDelete, onStatusChange, d
             </div>
             <div className="h-2 bg-secondary rounded-full overflow-hidden">
               <div
-                className={cn(
-                  'h-full transition-all',
-                  (agent.usage.current / agent.usage.max) >= 1 ? 'bg-red-500' :
-                  (agent.usage.current / agent.usage.max) >= 0.8 ? 'bg-yellow-500' : 'bg-green-500'
-                )}
-                style={{ width: `${Math.min(100, (agent.usage.current / agent.usage.max) * 100)}%` }}
+                className="h-full transition-all"
+                style={{
+                  width: `${Math.min(100, (agent.usage.current / agent.usage.max) * 100)}%`,
+                  backgroundColor: getUtilizationColor((agent.usage.current / agent.usage.max) * 100),
+                }}
               />
             </div>
             {agent.usage.current >= agent.usage.max && agent.usage.resetsAt && (
@@ -368,7 +334,7 @@ export function AgentCard({ agent, onSelect, onEdit, onDelete, onStatusChange, d
         {/* Status with Assigned Project */}
         {(agent.assignedProject || agent.currentProjectId) && (
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge className={getStatusColor(agent.status)}>
+            <Badge style={getStatusStyles(agent.status)}>
               {getStatusIcon(agent.status)}
               {agent.status}
             </Badge>

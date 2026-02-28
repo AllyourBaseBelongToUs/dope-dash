@@ -14,6 +14,7 @@ import json
 import logging
 import os
 import platform
+import socket
 import tempfile
 import uuid
 from contextlib import asynccontextmanager
@@ -36,6 +37,10 @@ sys.path.insert(0, str(PathLib(__file__).parent.parent))
 from app.core.config import settings
 from app.db import get_db_session
 from sqlalchemy import select
+
+# Service configuration
+SERVICE_NAME = "control_api"
+SERVICE_PORT = 8010
 
 
 logger = logging.getLogger(__name__)
@@ -499,7 +504,7 @@ async def root() -> dict[str, Any]:
         "name": "Dope Dash Control API",
         "version": "0.1.0",
         "status": "running",
-        "port": 8002,
+        "port": 8010,
         "endpoints": {
             "send_command": "POST /api/control/{session_id}/command",
             "get_status": "GET /api/control/{session_id}/status",
@@ -781,24 +786,89 @@ async def websocket_control(websocket: WebSocket, session_id: uuid.UUID) -> None
         logger.info(f"Session {session_id} disconnected from control WebSocket")
 
 
+def check_port_available(host: str, port: int) -> bool:
+    """Check if a port is available for binding.
+
+    Args:
+        host: Host address to check.
+        port: Port number to check.
+
+    Returns:
+        True if port is available, False otherwise.
+    """
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(1)
+            s.bind((host, port))
+            return True
+    except OSError as e:
+        return False
+
+
 def main() -> None:
     """Run the Control API server.
 
-    Binds to 0.0.0.0:8002 for external access.
+    Binds to 0.0.0.0:8010 for external access.
+    Port: 8010 (step-5 spacing: 8000, 8005, 8010, 8015, 8020)
     """
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
-    uvicorn.run(
-        "control:app",
-        host="0.0.0.0",
-        port=8002,
-        log_level="info",
-        access_log=True,
-        reload=settings.environment == "development",
-    )
+    host = "0.0.0.0"
+    port = SERVICE_PORT
+
+    # Check if port is available before starting
+    if not check_port_available(host, port):
+        error_msg = f"Port {port} is already in use or blocked"
+        try:
+            from app.utils.port_logger import log_port_error
+            log_port_error(
+                service_name=SERVICE_NAME,
+                port=port,
+                error=error_msg,
+                additional_info={
+                    "host": host,
+                    "environment": settings.environment,
+                }
+            )
+        except ImportError:
+            pass  # Port logger not available, continue with standard error
+
+        logger.error(f"✗ {error_msg}. Check logs/port_errors.log for details.")
+        print(f"\n[ERROR] {error_msg}")
+        print(f"[ERROR] Service: {SERVICE_NAME}")
+        print(f"[ERROR] Port: {port}")
+        print(f"[ERROR] Check what's using the port: netstat -tuln | grep {port}")
+        sys.exit(1)
+
+    try:
+        uvicorn.run(
+            "control:app",
+            host=host,
+            port=port,
+            log_level="info",
+            access_log=True,
+            reload=settings.environment == "development",
+        )
+    except Exception as e:
+        # Log any startup errors
+        try:
+            from app.utils.port_logger import log_port_error
+            log_port_error(
+                service_name=SERVICE_NAME,
+                port=port,
+                error=e,
+                additional_info={
+                    "host": host,
+                    "environment": settings.environment,
+                    "error_stage": "uvicorn_startup",
+                }
+            )
+        except ImportError:
+            pass
+        raise
 
 
 if __name__ == "__main__":

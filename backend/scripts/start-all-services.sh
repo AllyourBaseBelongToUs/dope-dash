@@ -96,8 +96,8 @@ echo $CORE_PID > .pids/core
 echo -e "${GREEN}✓${NC} Core API started (PID: $CORE_PID)"
 sleep 2
 
-# Start WebSocket Server (port 8001)
-echo -e "${YELLOW}Starting WebSocket Server (port 8001)...${NC}"
+# Start WebSocket Server (port 8005)
+echo -e "${YELLOW}Starting WebSocket Server (port 8005)...${NC}"
 cd "$BACKEND_DIR"
 python server/websocket.py > logs/websocket.log 2>&1 &
 WS_PID=$!
@@ -105,8 +105,8 @@ echo $WS_PID > .pids/websocket
 echo -e "${GREEN}✓${NC} WebSocket Server started (PID: $WS_PID)"
 sleep 2
 
-# Start Control API (port 8002)
-echo -e "${YELLOW}Starting Control API (port 8002)...${NC}"
+# Start Control API (port 8010)
+echo -e "${YELLOW}Starting Control API (port 8010)...${NC}"
 cd "$BACKEND_DIR"
 python server/control.py > logs/control.log 2>&1 &
 CTRL_PID=$!
@@ -114,8 +114,8 @@ echo $CTRL_PID > .pids/control
 echo -e "${GREEN}✓${NC} Control API started (PID: $CTRL_PID)"
 sleep 2
 
-# Start Analytics API (port 8004)
-echo -e "${YELLOW}Starting Analytics API (port 8004)...${NC}"
+# Start Analytics API (port 8020)
+echo -e "${YELLOW}Starting Analytics API (port 8020)...${NC}"
 cd "$BACKEND_DIR"
 python server/analytics.py > logs/analytics.log 2>&1 &
 ANALYTICS_PID=$!
@@ -129,16 +129,16 @@ echo -e "${BLUE}========================================${NC}"
 echo ""
 echo "Service URLs:"
 echo -e "  Core API:     ${GREEN}http://192.168.206.128:8000${NC}"
-echo -e "  WebSocket:     ${GREEN}ws://192.168.206.128:8001/ws${NC}"
-echo -e "  Control:       ${GREEN}http://192.168.206.128:8002${NC}"
-echo -e "  Dashboard:     ${GREEN}http://192.168.206.128:8003${NC}"
-echo -e "  Analytics:     ${GREEN}http://192.168.206.128:8004${NC}"
+echo -e "  WebSocket:     ${GREEN}ws://192.168.206.128:8005/ws${NC}"
+echo -e "  Control:       ${GREEN}http://192.168.206.128:8010${NC}"
+echo -e "  Dashboard:     ${GREEN}http://192.168.206.128:8015${NC}"
+echo -e "  Analytics:     ${GREEN}http://192.168.206.128:8020${NC}"
 echo ""
 echo "Health Check:"
 echo "  Core API:     curl http://localhost:8000/health"
-echo "  WebSocket:     curl http://localhost:8001/health"
-echo "  Control:       curl http://localhost:8002/health"
-echo "  Analytics:     curl http://localhost:8004/health"
+echo "  WebSocket:     curl http://localhost:8005/health"
+echo "  Control:       curl http://localhost:8010/health"
+echo "  Analytics:     curl http://localhost:8020/health"
 echo ""
 echo "Logs:"
 echo "  Core API:     tail -f logs/core-api.log"

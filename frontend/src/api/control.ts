@@ -27,7 +27,7 @@ export interface SessionStatusResponse {
   };
 }
 
-const CONTROL_API_URL = process.env.NEXT_PUBLIC_CONTROL_API_URL || 'http://localhost:8002';
+const CONTROL_API_URL = process.env.NEXT_PUBLIC_CONTROL_API_URL || 'http://localhost:8010';
 
 /**
  * Send a command to a session

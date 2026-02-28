@@ -1,11 +1,11 @@
 /**
  * Control API client for sending commands to agents.
  *
- * This module provides functions to interact with the Control API server (port 8002)
+ * This module provides functions to interact with the Control API server (port 8010)
  * for sending pause, resume, skip, and stop commands to active agent sessions.
  */
 
-const CONTROL_API_BASE_URL = process.env.NEXT_PUBLIC_CONTROL_API_URL || 'http://localhost:8002';
+const CONTROL_API_BASE_URL = process.env.NEXT_PUBLIC_CONTROL_API_URL || 'http://localhost:8010';
 
 export type CommandType = 'pause' | 'resume' | 'skip' | 'stop';
 

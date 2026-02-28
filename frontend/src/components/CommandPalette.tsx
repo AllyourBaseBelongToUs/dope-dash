@@ -303,7 +303,7 @@ export function CommandPalette({ sessions }: CommandPaletteProps) {
         // For now, send feedback as metadata with a skip command
         // In the future, this could be a dedicated feedback command type
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_CONTROL_API_URL || 'http://localhost:8002'}/api/control/${sessionId}/command`,
+          `${process.env.NEXT_PUBLIC_CONTROL_API_URL || 'http://localhost:8010'}/api/control/${sessionId}/command`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

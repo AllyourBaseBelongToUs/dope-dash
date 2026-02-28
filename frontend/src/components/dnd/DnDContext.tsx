@@ -41,6 +41,8 @@ interface AssignmentDnDContextProps {
   onDragStart?: (type: 'agent' | 'project', id: UniqueIdentifier) => void;
   /** Optional callback when drag ends */
   onDragEnd?: (success: boolean) => void;
+  /** Optional callback for assignment errors */
+  onAssignError?: (error: Error, agentId: string, projectId: string) => void;
 }
 
 export function AssignmentDnDContext({
@@ -48,6 +50,7 @@ export function AssignmentDnDContext({
   onAssign,
   onDragStart,
   onDragEnd,
+  onAssignError,
 }: AssignmentDnDContextProps) {
   const [activeAgent, setActiveAgent] = useState<AgentPoolAgent | null>(null);
   const [activeProject, setActiveProject] = useState<Project | null>(null);
@@ -87,7 +90,6 @@ export function AssignmentDnDContext({
       const { active, over } = event;
 
       // Reset state
-      const wasAgent = !!activeAgent;
       setActiveAgent(null);
       setActiveProject(null);
       setIsDragging(false);
@@ -100,28 +102,42 @@ export function AssignmentDnDContext({
       const activeData = active.data.current;
       const overData = over.data.current;
 
+      // Explicit null checks before processing
+      if (!activeData || !overData) {
+        onDragEnd?.(false);
+        return;
+      }
+
       let success = false;
 
       try {
         // Agent dropped on Project
-        if (activeData?.type === 'agent' && overData?.type === 'project') {
+        if (activeData.type === 'agent' && overData.type === 'project') {
           await onAssign(activeData.agent.agentId, overData.projectId);
           success = true;
         }
 
         // Project dropped on Agent (reverse direction)
-        if (activeData?.type === 'project' && overData?.type === 'agent') {
+        if (activeData.type === 'project' && overData.type === 'agent') {
           await onAssign(overData.agent.agentId, activeData.projectId);
           success = true;
         }
       } catch (error) {
-        console.error('Assignment failed:', error);
+        const err = error instanceof Error ? error : new Error(String(error));
+        // Call error callback if provided
+        if (onAssignError) {
+          const agentId = activeData.type === 'agent' ? activeData.agent.agentId : overData.agent?.agentId;
+          const projectId = activeData.type === 'project' ? activeData.projectId : overData.projectId;
+          if (agentId && projectId) {
+            onAssignError(err, agentId, projectId);
+          }
+        }
         success = false;
       }
 
       onDragEnd?.(success);
     },
-    [activeAgent, onAssign, onDragEnd]
+    [activeAgent, onAssign, onDragEnd, onAssignError]
   );
 
   return (

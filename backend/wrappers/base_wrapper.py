@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 
 # Default configuration
-DEFAULT_WEBSOCKET_URL = "http://localhost:8001"
+DEFAULT_WEBSOCKET_URL = "http://localhost:8005"
 
 
 class EventIngestRequest(BaseModel):

@@ -79,82 +79,90 @@ class AgentPoolSyncService:
         updated = 0
         removed = 0
 
-        async for session in get_db_session():
-            try:
-                # Get all existing agents from database
-                result = await session.execute(
-                    select(AgentPool).where(AgentPool.deleted_at.is_(None))
-                )
-                db_agents = {a.agent_id: a for a in result.scalars().all()}
+        # Use proper async context manager pattern
+        session_gen = get_db_session()
+        session = await session_gen.__anext__()
 
-                # Track which agent_ids we've seen
-                seen_agent_ids: set[str] = set()
+        try:
+            # Get all existing agents from database
+            result = await session.execute(
+                select(AgentPool).where(AgentPool.deleted_at.is_(None))
+            )
+            db_agents = {a.agent_id: a for a in result.scalars().all()}
 
-                # Sync detected agents to database
-                for detected in detected_agents:
-                    seen_agent_ids.add(detected.agent_id)
+            # Track which agent_ids we've seen
+            seen_agent_ids: set[str] = set()
 
-                    if detected.agent_id in db_agents:
-                        # Update existing agent
-                        db_agent = db_agents[detected.agent_id]
+            # Sync detected agents to database
+            for detected in detected_agents:
+                seen_agent_ids.add(detected.agent_id)
 
-                        # Update status based on registry status
-                        status_map = {
-                            AgentStatus.REGISTERED: PoolAgentStatus.AVAILABLE,
-                            AgentStatus.ACTIVE: PoolAgentStatus.AVAILABLE,
-                            AgentStatus.IDLE: PoolAgentStatus.AVAILABLE,
-                            AgentStatus.DISCONNECTED: PoolAgentStatus.OFFLINE,
-                            AgentStatus.TERMINATED: PoolAgentStatus.OFFLINE,
-                        }
-                        db_agent.status = status_map.get(
-                            detected.status, PoolAgentStatus.AVAILABLE
-                        )
+                if detected.agent_id in db_agents:
+                    # Update existing agent
+                    db_agent = db_agents[detected.agent_id]
 
-                        # Update heartbeat
-                        if detected.last_heartbeat:
-                            db_agent.last_heartbeat = detected.last_heartbeat.timestamp
-                        else:
-                            db_agent.last_heartbeat = datetime.now(timezone.utc)
+                    # Update status based on registry status
+                    status_map = {
+                        AgentStatus.REGISTERED: PoolAgentStatus.AVAILABLE,
+                        AgentStatus.ACTIVE: PoolAgentStatus.AVAILABLE,
+                        AgentStatus.IDLE: PoolAgentStatus.AVAILABLE,
+                        AgentStatus.DISCONNECTED: PoolAgentStatus.OFFLINE,
+                        AgentStatus.TERMINATED: PoolAgentStatus.OFFLINE,
+                    }
+                    db_agent.status = status_map.get(
+                        detected.status, PoolAgentStatus.AVAILABLE
+                    )
 
-                        # Update other fields
-                        db_agent.pid = detected.pid
-                        db_agent.working_dir = detected.working_dir
-                        db_agent.command = detected.command
-                        db_agent.tmux_session = detected.tmux_session
-
-                        updated += 1
+                    # Update heartbeat
+                    if detected.last_heartbeat:
+                        db_agent.last_heartbeat = detected.last_heartbeat.timestamp
                     else:
-                        # Register new agent
-                        new_agent = AgentPool(
-                            agent_id=detected.agent_id,
-                            agent_type=detected.agent_type,
-                            status=PoolAgentStatus.AVAILABLE,
-                            pid=detected.pid,
-                            working_dir=detected.working_dir,
-                            command=detected.command,
-                            tmux_session=detected.tmux_session,
-                            last_heartbeat=datetime.now(timezone.utc),
-                            current_load=0,
-                            max_capacity=5,
-                            capabilities=[c.name for c in detected.capabilities],
-                            metadata=detected.metadata,
-                        )
-                        session.add(new_agent)
-                        added += 1
+                        db_agent.last_heartbeat = datetime.now(timezone.utc)
 
-                # Mark agents not in registry as offline (but don't delete)
-                for agent_id, db_agent in db_agents.items():
-                    if agent_id not in seen_agent_ids:
-                        if db_agent.status != PoolAgentStatus.OFFLINE:
-                            db_agent.status = PoolAgentStatus.OFFLINE
-                            removed += 1
+                    # Update other fields
+                    db_agent.pid = detected.pid
+                    db_agent.working_dir = detected.working_dir
+                    db_agent.command = detected.command
+                    db_agent.tmux_session = detected.tmux_session
 
-                await session.commit()
+                    updated += 1
+                else:
+                    # Register new agent
+                    new_agent = AgentPool(
+                        agent_id=detected.agent_id,
+                        agent_type=detected.agent_type,
+                        status=PoolAgentStatus.AVAILABLE,
+                        pid=detected.pid,
+                        working_dir=detected.working_dir,
+                        command=detected.command,
+                        tmux_session=detected.tmux_session,
+                        last_heartbeat=datetime.now(timezone.utc),
+                        current_load=0,
+                        max_capacity=5,
+                        capabilities=[c.name for c in detected.capabilities],
+                        metadata=detected.metadata,
+                    )
+                    session.add(new_agent)
+                    added += 1
 
-            except Exception as e:
-                logger.error(f"Error during agent pool sync: {e}", exc_info=True)
-                await session.rollback()
-            break  # Only run once per call
+            # Mark agents not in registry as offline (but don't delete)
+            for agent_id, db_agent in db_agents.items():
+                if agent_id not in seen_agent_ids:
+                    if db_agent.status != PoolAgentStatus.OFFLINE:
+                        db_agent.status = PoolAgentStatus.OFFLINE
+                        removed += 1
+
+            await session.commit()
+
+        except Exception as e:
+            logger.error(f"Error during agent pool sync: {e}", exc_info=True)
+            await session.rollback()
+        finally:
+            # Properly close the session generator
+            try:
+                await session_gen.aclose()
+            except Exception:
+                pass
 
         return {
             "added": added,

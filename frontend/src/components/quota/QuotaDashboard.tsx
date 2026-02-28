@@ -41,8 +41,9 @@ export function QuotaDashboard() {
   const [error, setError] = useState<string | null>(null);
 
   const environmentConfig = useEnvironmentStore((state) => state.config);
+  // Core API on 8000, WebSocket on 8005 (step-5 spacing)
   const API_URL = environmentConfig?.apiUrl || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-  const WS_URL = environmentConfig?.wsUrl || process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8001/ws";
+  const WS_URL = environmentConfig?.wsUrl || process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8005/ws";
 
   // Fetch quota data
   const fetchQuotaData = useCallback(async () => {

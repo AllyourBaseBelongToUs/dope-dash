@@ -59,7 +59,7 @@ from db.connection import db_manager, get_db_session
 logger = logging.getLogger(__name__)
 
 # Default configuration
-DEFAULT_WEBSOCKET_URL = "http://localhost:8001"
+DEFAULT_WEBSOCKET_URL = "http://localhost:8005"
 DEFAULT_PROJECT_DIR = Path.cwd()
 
 # Claude-specific directories
@@ -881,7 +881,7 @@ Examples:
   python -m wrappers.claude_wrapper
   python -m wrappers.claude_wrapper --project-dir /path/to/project
   python -m wrappers.claude_wrapper --pid 12345
-  python -m wrappers.claude_wrapper --websocket-url http://localhost:8001
+  python -m wrappers.claude_wrapper --websocket-url http://localhost:8005
   python -m wrappers.claude_wrapper --debug
         """,
     )

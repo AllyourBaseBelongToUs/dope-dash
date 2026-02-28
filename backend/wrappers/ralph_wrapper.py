@@ -17,7 +17,7 @@ Features:
 Usage:
     python -m wrappers.ralph_wrapper
     python -m wrappers.ralph_wrapper --project-dir /path/to/project
-    python -m wrappers.ralph_wrapper --websocket-url http://localhost:8001
+    python -m wrappers.ralph_wrapper --websocket-url http://localhost:8005
 """
 
 from __future__ import annotations
@@ -51,7 +51,7 @@ from db.connection import db_manager, get_db_session
 logger = logging.getLogger(__name__)
 
 # Default configuration
-DEFAULT_WEBSOCKET_URL = "http://localhost:8001"
+DEFAULT_WEBSOCKET_URL = "http://localhost:8005"
 DEFAULT_PROJECT_DIR = Path.cwd()
 HEARTBEAT_FILE = ".ralph/heartbeat.json"
 LOG_DIR = ".ralph/logs"
@@ -732,7 +732,7 @@ def main() -> None:
 Examples:
   python -m wrappers.ralph_wrapper
   python -m wrappers.ralph_wrapper --project-dir /path/to/project
-  python -m wrappers.ralph_wrapper --websocket-url http://localhost:8001
+  python -m wrappers.ralph_wrapper --websocket-url http://localhost:8005
   python -m wrappers.ralph_wrapper --debug
         """,
     )

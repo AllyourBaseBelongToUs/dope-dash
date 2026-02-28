@@ -1,5 +1,6 @@
 'use client';
 
+import { useCallback } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -68,15 +69,26 @@ export function ProjectSessionPanel({ project, isHovered, onClick, droppable = t
     ? `...${project.path.slice(-37)}`
     : project.path;
 
+  // Keyboard handler for accessibility
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if ((e.key === 'Enter' || e.key === ' ') && onClick) {
+      e.preventDefault();
+      onClick();
+    }
+  }, [onClick]);
+
   return (
     <Card
       ref={setNodeRef}
+      tabIndex={onClick ? 0 : undefined}
+      role={onClick ? 'button' : undefined}
+      onKeyDown={onClick ? handleKeyDown : undefined}
       className={cn(
         'transition-all cursor-pointer',
         isHovered && 'ring-2 ring-primary/50',
         project.linkedAgentColor && `border-l-4`,
         isOver && 'ring-2 ring-green-500 bg-green-500/5',
-        onClick && 'hover:shadow-md'
+        onClick && 'hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/50'
       )}
       style={
         project.linkedAgentColor

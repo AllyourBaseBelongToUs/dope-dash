@@ -43,8 +43,9 @@ export default function Home() {
   }, [detectEnvironment]);
 
   // Get WebSocket and API URLs from environment config
-  const WS_URL = environmentConfig?.wsUrl || process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8001/ws';
-  const API_URL = environmentConfig?.apiUrl || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001/api/events';
+  // Step-5 port spacing: 8000, 8005, 8010, 8015, 8020
+  const WS_URL = environmentConfig?.wsUrl || process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8005/ws';
+  const API_URL = environmentConfig?.apiUrl || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8005/api/events';
 
   // Network monitoring for environment changes
   useNetworkMonitoring({

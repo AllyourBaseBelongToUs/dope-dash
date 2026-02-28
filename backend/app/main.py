@@ -186,8 +186,8 @@ async def root():
 
 
 # Include API routers (Core API only - Port 8000)
-# Note: analytics router handled by analytics service (port 8004)
-# Note: commands router handled by control service (port 8002)
+# Note: analytics router handled by analytics service (port 8020)
+# Note: commands router handled by control service (port 8010)
 from app.api.query import router as query_router
 from app.api.reports import router as reports_router
 from app.api.retention import router as retention_router
@@ -199,6 +199,7 @@ from app.api.quota import router as quota_router
 from app.api.quota_alerts import router as quota_alerts_router
 from app.api.auto_pause import router as auto_pause_router
 from app.api.session_control import router as session_control_router
+from app.api.feedback import router as feedback_router
 
 app.include_router(query_router)
 app.include_router(reports_router)
@@ -211,3 +212,4 @@ app.include_router(quota_router)
 app.include_router(quota_alerts_router)
 app.include_router(auto_pause_router)
 app.include_router(session_control_router)
+app.include_router(feedback_router)

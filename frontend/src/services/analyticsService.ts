@@ -79,7 +79,7 @@ class AnalyticsService {
    * Get the API base URL from environment store or fallback
    */
   private getApiBaseUrl(): string {
-    // Check environment variable first (Analytics API on port 8004)
+    // Check environment variable first (Analytics API on port 8020)
     if (process.env.NEXT_PUBLIC_ANALYTICS_API_URL) {
       return process.env.NEXT_PUBLIC_ANALYTICS_API_URL;
     }
@@ -104,21 +104,21 @@ class AnalyticsService {
 
   /**
    * Get default API URL based on current environment
-   * Defaults to Analytics API (port 8004)
+   * Defaults to Analytics API (port 8020)
    */
   private getDefaultApiUrl(): string {
     if (typeof window !== 'undefined') {
       const hostname = window.location.hostname;
       if (hostname === 'localhost' || hostname === '127.0.0.1') {
-        return 'http://localhost:8004';
+        return 'http://localhost:8020';
       }
     }
-    return 'http://localhost:8004';
+    return 'http://localhost:8020';
   }
 
   /**
    * Fetch sessions with analytics data
-   * Uses Analytics API (port 8004) - /api/analytics/{session_id}/summary endpoint
+   * Uses Analytics API (port 8020) - /api/analytics/{session_id}/summary endpoint
    * FIXED: Added caching and proper error handling for empty returns
    */
   async fetchSessions(filters?: QueryFilters): Promise<SessionMetrics[]> {

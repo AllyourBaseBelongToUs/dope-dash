@@ -14,10 +14,11 @@ interface ConnectionSettingsStore {
 }
 
 const defaultSettings: ConnectionSettings = {
-  wsUrl: process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8001/ws',
-  apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001/api/events',
-  controlApiUrl: process.env.NEXT_PUBLIC_CONTROL_API_URL || 'http://localhost:8002',
-  analyticsApiUrl: process.env.NEXT_PUBLIC_ANALYTICS_API_URL || 'http://localhost:8004',
+  // Step-5 port spacing: 8000, 8005, 8010, 8015, 8020
+  wsUrl: process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8005/ws',
+  apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8005/api/events',
+  controlApiUrl: process.env.NEXT_PUBLIC_CONTROL_API_URL || 'http://localhost:8010',
+  analyticsApiUrl: process.env.NEXT_PUBLIC_ANALYTICS_API_URL || 'http://localhost:8020',
 };
 
 const STORAGE_KEY = 'connection-settings';
