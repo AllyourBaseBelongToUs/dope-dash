@@ -189,7 +189,6 @@ async def root():
 # Note: analytics router handled by analytics service (port 8020)
 # Note: commands router handled by control service (port 8010)
 from app.api.query import router as query_router
-from app.api.reports import router as reports_router
 from app.api.retention import router as retention_router
 from app.api.portfolio import router as portfolio_router
 from app.api.projects import router as projects_router
@@ -201,8 +200,17 @@ from app.api.auto_pause import router as auto_pause_router
 from app.api.session_control import router as session_control_router
 from app.api.feedback import router as feedback_router
 
+# Reports router requires WeasyPrint which needs Cairo (system library)
+# Make it optional for easier Windows setup
+try:
+    from app.api.reports import router as reports_router
+    app.include_router(reports_router)
+except OSError as e:
+    import logging
+    logging.warning(f"Reports router disabled: {e}")
+    logging.warning("Install GTK/Cairo for PDF report generation")
+
 app.include_router(query_router)
-app.include_router(reports_router)
 app.include_router(retention_router)
 app.include_router(portfolio_router)
 app.include_router(projects_router)

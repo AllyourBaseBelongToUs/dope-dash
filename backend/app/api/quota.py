@@ -11,7 +11,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from db.connection import get_db_session as get_db
 from app.models.quota import (
     QuotaAlertStatus,
     ProviderResponse,
