@@ -33,18 +33,18 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # Startup: Initialize database connection pool
     try:
         db_manager.init_db()
-        print(f"✓ Database connection pool initialized (pool_size={settings.db_pool_size})")
+        print(f"[OK] Database connection pool initialized (pool_size={settings.db_pool_size})")
     except Exception as e:
-        print(f"✗ Failed to initialize database: {e}")
+        print(f"[FAIL] Failed to initialize database: {e}")
         raise
 
     # Start the background scheduler for scheduled reports
     try:
         from app.lib.scheduler import start_scheduler
         start_scheduler()
-        print("✓ Background scheduler started for scheduled reports")
+        print("[OK] Background scheduler started for scheduled reports")
     except Exception as e:
-        print(f"⚠ Failed to start scheduler: {e}")
+        print(f"[WARN] Failed to start scheduler: {e}")
 
     # Start the request queue processor
     try:
@@ -64,27 +64,27 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
                 break  # Only start once
 
         await start_queue_processor()
-        print("✓ Request queue processor started")
+        print("[OK] Request queue processor started")
     except Exception as e:
-        print(f"⚠ Failed to start queue processor: {e}")
+        print(f"[WARN] Failed to start queue processor: {e}")
 
     # Start agent registry monitoring
     try:
         from app.services.agent_registry import get_agent_registry
         agent_registry = get_agent_registry()
         await agent_registry.start_monitoring(interval=30)
-        print("✓ Agent registry monitoring started")
+        print("[OK] Agent registry monitoring started")
     except Exception as e:
-        print(f"⚠ Failed to start agent registry monitoring: {e}")
+        print(f"[WARN] Failed to start agent registry monitoring: {e}")
 
     # Start agent pool sync service
     try:
         from app.services.agent_pool_sync import get_agent_pool_sync_service
         sync_service = get_agent_pool_sync_service()
         await sync_service.start_sync()
-        print("✓ Agent pool sync service started")
+        print("[OK] Agent pool sync service started")
     except Exception as e:
-        print(f"⚠ Failed to start agent pool sync service: {e}")
+        print(f"[WARN] Failed to start agent pool sync service: {e}")
 
     yield
 
@@ -96,47 +96,47 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
                 await _queue_processor_task
             except Exception:
                 pass  # Task was cancelled
-            print("✓ Request queue processor stopped")
+            print("[OK] Request queue processor stopped")
     except Exception as e:
-        print(f"⚠ Error stopping queue processor: {e}")
+        print(f"[WARN] Error stopping queue processor: {e}")
 
     try:
         from app.lib.scheduler import stop_scheduler
         stop_scheduler()
-        print("✓ Background scheduler stopped")
+        print("[OK] Background scheduler stopped")
     except Exception as e:
-        print(f"⚠ Error stopping scheduler: {e}")
+        print(f"[WARN] Error stopping scheduler: {e}")
 
     # Stop agent registry monitoring
     try:
         from app.services.agent_registry import get_agent_registry
         agent_registry = get_agent_registry()
         await agent_registry.stop_monitoring()
-        print("✓ Agent registry monitoring stopped")
+        print("[OK] Agent registry monitoring stopped")
     except Exception as e:
-        print(f"⚠ Error stopping agent registry monitoring: {e}")
+        print(f"[WARN] Error stopping agent registry monitoring: {e}")
 
     # Stop agent pool sync service
     try:
         from app.services.agent_pool_sync import get_agent_pool_sync_service
         sync_service = get_agent_pool_sync_service()
         await sync_service.stop_sync()
-        print("✓ Agent pool sync service stopped")
+        print("[OK] Agent pool sync service stopped")
     except Exception as e:
-        print(f"⚠ Error stopping agent pool sync service: {e}")
+        print(f"[WARN] Error stopping agent pool sync service: {e}")
 
     try:
         if _http_session:
             await _http_session.close()
-            print("✓ HTTP session closed")
+            print("[OK] HTTP session closed")
     except Exception as e:
-        print(f"⚠ Error closing HTTP session: {e}")
+        print(f"[WARN] Error closing HTTP session: {e}")
 
     try:
         await db_manager.close_db()
-        print("✓ Database connection pool closed")
+        print("[OK] Database connection pool closed")
     except Exception as e:
-        print(f"✗ Error closing database: {e}")
+        print(f"[FAIL] Error closing database: {e}")
 
 
 # Create FastAPI application with lifespan handler

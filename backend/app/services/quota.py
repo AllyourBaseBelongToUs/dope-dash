@@ -15,9 +15,12 @@ import logging
 from typing import Any
 from uuid import UUID
 
+from fastapi import Depends
 from sqlalchemy import and_, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
+
+from db.connection import get_db_session as get_db
 
 from app.models.quota import (
     Provider,
@@ -800,11 +803,13 @@ class QuotaService:
 
 # ========== Dependency ==========
 
-def get_quota_service(session: AsyncSession) -> QuotaService:
+def get_quota_service(session: AsyncSession = Depends(get_db)) -> QuotaService:
     """Get quota service instance.
 
+    This is a FastAPI dependency that injects the database session.
+
     Args:
-        session: Database session
+        session: Database session (injected via Depends)
 
     Returns:
         QuotaService instance
